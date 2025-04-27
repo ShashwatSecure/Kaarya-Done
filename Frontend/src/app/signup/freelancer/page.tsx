@@ -6,28 +6,27 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer'
 
 const FreelancerSignupPage = () => {
-  const steps = ['Profile Info', 'Contact Details', 'Services', 'Availability', 'Review'];
+  const steps = ['Profile Info', 'Services', 'Review'];
   const [isTermsChecked, setIsTermsChecked] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
   const [step, setStep] = useState(1);
+  
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     fullName: '',
     workEmail: '',
     phone: '',
     password: '',
+    confirmPassword: '',
     profilePhoto: null as File | null,
     bio: '',
-    languages: [] as string[],
     city: '',
     pincode: '',
     services: [] as string[],
+    serviceDesc: '',
     experience: '',
     rate: '',
-    certifications: [] as File[],
     willingnessToTravel: 'no' as 'yes' | 'no' | 'maybe',
-    availability: '',
-    availableDays: [] as string[],
-    timeSlots: '',
   });
 
   const handleNext = () => {
@@ -41,22 +40,16 @@ const FreelancerSignupPage = () => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+  
+    setFormData({ ...formData, [name]: value });
+
   };
+  
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsFormSubmitted(true);
-  };
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    setFormData(prev => {
-      const updatedDays = checked
-        ? [...prev.availableDays, value]
-        : prev.availableDays.filter(day => day !== value);
-      return { ...prev, availableDays: updatedDays };
-    });
   };
 
   return (
@@ -118,51 +111,7 @@ const FreelancerSignupPage = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Short Bio */}
-                <div>
-                  <label htmlFor="bio" className="block text-sm font-medium mb-2">Short Bio / About Me</label>
-                  <textarea
-                    id="bio"
-                    name="bio"
-                    rows={4}
-                    value={formData.bio}
-                    onChange={handleChange}
-                    placeholder="Tell clients about yourself, your skills, and experience..."
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Minimum 50 characters</p>
-                </div>
-
-                {/* Languages Spoken */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Languages Spoken</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                    {['English', 'Hindi', 'Tamil', 'Telugu', 'Marathi', 'Bengali'].map((lang) => (
-                      <label key={lang} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          value={lang}
-                          checked={formData.languages.includes(lang)}
-                          onChange={(e) => {
-                            const newLangs = e.target.checked
-                              ? [...formData.languages, lang]
-                              : formData.languages.filter((l) => l !== lang);
-                            setFormData({ ...formData, languages: newLangs });
-                          }}
-                          className="accent-orange-500"
-                        />
-                        <span>{lang}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 2: Contact Details */}
-            {step === 2 && (
-              <div className="space-y-4">
+                <div className="space-y-4">
                 <input
                   type="text"
                   name="fullName"
@@ -199,11 +148,36 @@ const FreelancerSignupPage = () => {
                   className="w-full px-4 py-3 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
                   required
                 />
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  required
+                />
+                handlePasswordMatch()
+              </div>
+              {/* Short Bio */}
+              <div>
+                  <label htmlFor="bio" className="block text-sm font-medium mb-2">Short Bio / About Me</label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    rows={4}
+                    value={formData.bio}
+                    onChange={handleChange}
+                    placeholder="Tell clients about yourself, your skills, and experience..."
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Minimum 50 characters</p>
+                </div>
               </div>
             )}
 
-            {/* Step 3: Services */}
-            {step === 3 && (
+            {/* Step 2: Services */}
+            {step === 2 && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold">Services & Experience</h2>
 
@@ -219,15 +193,26 @@ const FreelancerSignupPage = () => {
                     }}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                   >
-                    {['Plumbing', 'Electrical', 'Carpentry', 'Painting', 'Cleaning'].map((service) => (
+                    {['Plumbing', 'Electrical', 'Carpentry', 'Painting', 'Cleaning','Other'].map((service) => (
                       <option key={service} value={service}>
                         {service}
                       </option>
                     ))}
                   </select>
                   <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple services</p>
+                  <label htmlFor="serviceDesc" className="mt-2 block text-sm font-medium mb-2">Describe your service : </label>
+                  <textarea
+                    id="serviceDesc"
+                    name="serviceDesc"
+                    rows={2}
+                    value={formData.serviceDesc}
+                    onChange={handleChange}
+                    placeholder="Tell clients about your service..."
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                  <p className="text-xs text-gray-500 ">Minimum 20 characters</p>
                 </div>
-
+                    
                 <div>
                   <label className="block text-sm font-medium mb-2">Years of Experience</label>
                   <input
@@ -253,28 +238,6 @@ const FreelancerSignupPage = () => {
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Certifications</label>
-                  <input
-                    type="file"
-                    accept="application/pdf,image/*"
-                    onChange={(e) => {
-                      const files = e.target.files ? Array.from(e.target.files) : [];
-                      setFormData({ ...formData, certifications: files });
-                    }}
-                    multiple
-                    className="w-full text-sm text-gray-500 file:bg-gray-700 file:border-none file:text-white file:px-4 file:py-2 file:rounded-md file:hover:bg-orange-500"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Availability */}
-            {step === 4 && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Availability</h2>
-
                 {/* Willing to Travel */}
                 <div>
                   <label className="block text-sm font-medium mb-2">Willing to Travel?</label>
@@ -312,44 +275,11 @@ const FreelancerSignupPage = () => {
                     />
                   </div>
                 </div>
-
-                {/* Available Days */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Available Days</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(day => (
-                      <label key={day} className="inline-flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          name="availableDays"
-                          value={day}
-                          checked={formData.availableDays?.includes(day)}
-                          onChange={handleCheckboxChange}
-                          className="form-checkbox text-orange-500 bg-gray-700 border-gray-600"
-                        />
-                        <span className="text-sm">{day}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Time Slots */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Time Slots</label>
-                  <input
-                    type="text"
-                    name="timeSlots"
-                    placeholder="e.g. 10am - 2pm, 5pm - 9pm"
-                    value={formData.timeSlots}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                </div>
               </div>
             )}
 
-
-            {step === 5 && !isFormSubmitted && (
+          
+            {step === 3 && !isFormSubmitted && (
               <div className="mt-6 space-y-6">
                 {/* Profile Summary */}
                 <div id="profile-summary" className="space-y-4">
@@ -383,34 +313,9 @@ const FreelancerSignupPage = () => {
                         </div>
                       </div>
 
-                      {/* Bio */}
-                      <div>
-                        <p className="text-sm text-gray-400">Bio</p>
-                        <p id="summary-bio" className="text-sm mt-1 line-clamp-3">
-                          {formData.bio || 'Not provided'}
-                        </p>
-                      </div>
+                      
 
-                      {/* Languages */}
-                      <div>
-                        <p className="text-sm text-gray-400">Languages</p>
-                        <p id="summary-languages" className="text-sm mt-1">
-                          {formData.languages.length > 0 ? formData.languages.join(', ') : 'Not selected'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  {/* Contact Info Section */}
-                  <div className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-medium">Contact Information</h3>
-                      <button type="button" onClick={() => setStep(2)} className="text-orange-500 text-sm flex items-center">
-                        <i className="fas fa-edit mr-1"></i> Edit
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-gray-400">Full Name</p>
                         <p className="text-sm mt-1">{formData.fullName || 'Not provided'}</p>
@@ -422,6 +327,15 @@ const FreelancerSignupPage = () => {
                       <div>
                         <p className="text-sm text-gray-400">Work Email</p>
                         <p className="text-sm mt-1">{formData.workEmail || 'Not provided'}</p>
+                      </div>
+                    </div>
+
+                    {/* Bio */}
+                    <div>
+                        <p className="text-sm text-gray-400">Bio</p>
+                        <p id="summary-bio" className="text-sm mt-1 line-clamp-3">
+                          {formData.bio || 'Not provided'}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -464,51 +378,6 @@ const FreelancerSignupPage = () => {
                         </p>
                       </div>
 
-                      {/* Certifications */}
-                      <div className="md:col-span-3">
-                        <p className="text-sm text-gray-400">Certifications</p>
-                        <p id="summary-certifications" className="text-sm mt-1">
-                          {formData.certifications.length > 0
-                            ? `${formData.certifications.length} file(s) uploaded`
-                            : 'None uploaded'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  {/* Availability Section */}
-                  {/* Availability Section */}
-                  <div className="bg-gray-700 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-medium">Availability & Location</h3>
-                      <button
-                        type="button"
-                        onClick={() => setStep(3)}
-                        className="text-orange-500 text-sm flex items-center"
-                      >
-                        <i className="fas fa-edit mr-1"></i> Edit
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Available Days */}
-                      <div>
-                        <p className="text-sm text-gray-400">Available Days</p>
-                        <p id="summary-days" className="text-sm mt-1">
-                          {formData.availableDays.length > 0 ? formData.availableDays.join(', ') : 'Not selected'}
-                        </p>
-                      </div>
-
-
-                      {/* Time Slots (optional field - adjust as needed) */}
-                      <div>
-                        <p className="text-sm text-gray-400">Time Slots</p>
-                        <p id="summary-times" className="text-sm mt-1">
-                          {formData.timeSlots ? formData.timeSlots : 'Not selected'}
-                        </p>
-                      </div>
-
-                      {/* Location (city + pincode) */}
                       <div>
                         <p className="text-sm text-gray-400">Location</p>
                         <p id="summary-location" className="text-sm mt-1">
@@ -527,6 +396,8 @@ const FreelancerSignupPage = () => {
                       </div>
                     </div>
                   </div>
+
+                  
                 </div>
 
                 {/* Terms & Conditions */}
