@@ -25,7 +25,6 @@ const FreelancerSignupPage = () => {
     rate: '',
     certifications: [] as File[],
     willingnessToTravel: 'no' as 'yes' | 'no' | 'maybe',
-    availability: '',
     availableDays: [] as string[],
     timeSlots: '',
   });

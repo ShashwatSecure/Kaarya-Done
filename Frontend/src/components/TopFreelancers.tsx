@@ -39,14 +39,14 @@ const freelancers = [
 
 const FreelancerSection: FC = () => {
   return (
-    <section className="py-16 px-6 bg-black">
+    <section className="py-16 px-6 bg-white">
       <div className="container mx-auto">
-        <h2 className="text-3xl font-bold mb-12 text-center text-white">Top Rated Freelancers</h2>
+        <h2 className="text-3xl font-bold mb-12 text-center text-black">Top Rated Freelancers</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {freelancers.map((freelancer, index) => (
             <div
               key={index}
-              className="bg-gray-900 rounded-lg overflow-hidden transition duration-300 hover:scale-105"
+              className="bg-gray-100 rounded-lg overflow-hidden transition duration-300 hover:scale-105 hover:shadow-lg"
             >
               <div className="relative">
                 <img
@@ -65,19 +65,19 @@ const FreelancerSection: FC = () => {
               <div className="p-6">
                 <div className="flex justify-between mb-4">
                   <div>
-                    <p className="text-gray-400">Experience</p>
-                    <p className="font-medium text-white">{freelancer.experience}</p>
+                    <p className="text-gray-600">Experience</p>
+                    <p className="font-medium text-black">{freelancer.experience}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400">Rate</p>
-                    <p className="font-medium text-white">{freelancer.rate}</p>
+                    <p className="text-gray-600">Rate</p>
+                    <p className="font-medium text-black">{freelancer.rate}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400">Jobs</p>
-                    <p className="font-medium text-white">{freelancer.jobs}</p>
+                    <p className="text-gray-600">Jobs</p>
+                    <p className="font-medium text-black">{freelancer.jobs}</p>
                   </div>
                 </div>
-                <p className="text-gray-300 mb-4">{freelancer.description}</p>
+                <p className="text-gray-700 mb-4">{freelancer.description}</p>
                 <div className="flex space-x-2">
                   <button className="bg-[#ff9900] text-black px-4 py-2 rounded font-medium flex-1 hover:bg-orange-600 transition duration-300">
                     Book Now

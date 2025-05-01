@@ -11,6 +11,7 @@ export default function CustomerRegistration() {
     fullname: "",
     email: "",
     mobile: "",
+    username: "",
     password: "",
     confirmPassword: "",
     city: "",
@@ -19,6 +20,7 @@ export default function CustomerRegistration() {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -29,8 +31,15 @@ export default function CustomerRegistration() {
     setAgreeToTerms(e.target.checked);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
+    // Frontend validation
+    if (!/^\d{10}$/.test(formData.mobile)) {
+      alert("Mobile number must be 10 digits!");
+      return;
+    }
     
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
@@ -41,24 +50,55 @@ export default function CustomerRegistration() {
       alert("You must agree to the Terms & Conditions");
       return;
     }
-    
-    console.log("Form submitted!", formData);
-    alert("Account created successfully! Welcome to Fixify.");
   
-    // Reset the form
-    setFormData({
-      fullname: "",
-      email: "",
-      mobile: "",
-      password: "",
-      confirmPassword: "",
-      city: "",
-      pincode: "",
-    });
-    setAgreeToTerms(false);
+    try {
+      // Send data to Spring Boot backend
+      const response = await fetch("http://localhost:8080/api/auth/signup/customer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullname: formData.fullname,
+          email: formData.email,
+          mobile: formData.mobile,
+          username: formData.username,
+          password: formData.password, // Backend will hash this
+          city: formData.city,
+          pincode: formData.pincode,
+        }),
+      });
   
-    // Redirect to login page
-    router.push("/login/customer");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Signup failed!");
+      }
+  
+      // Success: Redirect to login
+      alert("Account created successfully! Welcome to Fixify.");
+      router.push("/login/customer");
+      
+    } catch (error) {
+      console.error("Signup error:", error);
+        if(error instanceof Error){
+          alert(error.message);
+        } else{
+          alert("An unexpected error occurred.");
+        }
+    } finally {
+      setIsLoading(false);
+      setFormData({
+        fullname: "",
+        email: "",
+        mobile: "",
+        username: "",
+        password: "",
+        confirmPassword: "",
+        city: "",
+        pincode: "",
+      });
+      setAgreeToTerms(false);
+    }
   };
 
   return (
@@ -135,6 +175,25 @@ export default function CustomerRegistration() {
                   </div>
 
                   <div>
+                    <label htmlFor="username" className="block text-sm font-medium mb-1">Username</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i className="fas fa-envelope text-gray-500"></i>
+                      </div>
+                      <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        required
+                        placeholder="preet123"
+                        className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
                     <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -188,7 +247,7 @@ export default function CustomerRegistration() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold border-b border-gray-700 pb-2">Location (Optional)</h3>
+                  <h3 className="text-lg font-semibold border-b border-gray-700 pb-2">Location </h3>
 
                   <div>
                     <label htmlFor="city" className="block text-sm font-medium mb-1">City</label>
