@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.validator.constraints.UniqueElements;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "customers", schema = "public")
+@Table(name = "customers", uniqueConstraints = @UniqueConstraint(columnNames = "mobile_number"))
 @NoArgsConstructor
 @AllArgsConstructor
 public class Customer {
@@ -20,21 +22,20 @@ public class Customer {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(nullable = false, length = 255)
-    private String email;
-
     @Column(name = "mobile_number", nullable = false, length = 15)
     private String mobile;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String username;
+    @Column(length = 500)
+    private String address;
 
-    @Column(nullable = false, length = 60)  // BCrypt hash length
-    private String password;
+    @Column(name = "photo_url", length = 255)
+    private String photoUrl;
 
-    @Column(length = 50)
-    private String city;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Column(length = 10)
-    private String pincode;
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }
