@@ -11,9 +11,4 @@ public interface FreelancerRepository extends JpaRepository<Freelancer, Long> {
     boolean existsByMobile(String mobile);
     boolean existsByAadhaarNumber(String aadhaarNumber);
     boolean existsByPanNumber(String panNumber);
-
-    // Custom queries based on the new fields
-    List<Freelancer> findByServicesContaining(String service);
-    List<Freelancer> findByExperienceGreaterThanEqual(int years);
-    List<Freelancer> findByWillingnessToTravel(boolean willingness);
 }

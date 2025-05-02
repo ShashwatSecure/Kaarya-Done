@@ -34,9 +34,9 @@ export default function Navbar() {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex space-x-8">
             <Link href="/" className="text-gray-800 hover:text-[#ff9900]">Home</Link>
-            <Link href="/service" className="text-gray-800 hover:text-[#ff9900]">Services</Link>
+            <Link href="/services" className="text-gray-800 hover:text-[#ff9900]">Services</Link>
             <Link href="/freelancers" className="text-gray-800 hover:text-[#ff9900]">Freelancers</Link>
-            <Link href="/howitworks" className="text-gray-800 hover:text-[#ff9900]">How It Works</Link>
+            <Link href="/how-it-works" className="text-gray-800 hover:text-[#ff9900]">How It Works</Link>
             <Link href="/contactus" className="text-gray-800 hover:text-[#ff9900]">Contact Us</Link>
           </nav>
 
@@ -71,9 +71,9 @@ export default function Navbar() {
       {menuOpen && (
         <div className="fixed top-16 left-0 right-0 bg-white border-t border-gray-200 px-6 py-6 space-y-4 z-40 shadow-md">
           <Link href="/" className="block text-gray-800 hover:text-[#ff9900]">Home</Link>
-          <Link href="/service" className="block text-gray-800 hover:text-[#ff9900]">Services</Link>
+          <Link href="/services" className="block text-gray-800 hover:text-[#ff9900]">Services</Link>
           <Link href="/freelancers" className="block text-gray-800 hover:text-[#ff9900]">Freelancers</Link>
-          <Link href="/howitworks" className="block text-gray-800 hover:text-[#ff9900]">How It Works</Link>
+          <Link href="/how-it-works" className="block text-gray-800 hover:text-[#ff9900]">How It Works</Link>
           <Link href="/contactus" className="block text-gray-800 hover:text-[#ff9900]">Contact Us</Link>
           <button
             onClick={openModal}
@@ -83,7 +83,7 @@ export default function Navbar() {
           </button>
           <button
             onClick={() => setIsRegisterModalOpen(true)}
-            className="block bg-[#ff9900] text-black px-4 py-2 rounded font-medium hover:bg-orange-600 w-full text-center"
+            className="block bg-[#ff9900] text-black px-4 py-2 rounded font-medium hover:bg-orange-600 hover:text-white w-full text-center"
           >
             SignUp
           </button>

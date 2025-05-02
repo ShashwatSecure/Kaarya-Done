@@ -21,7 +21,9 @@ public class FreelancerController {
     @PostMapping("/signup/freelancer")
     public ResponseEntity<?> signupFreelancer(@RequestBody SignupDtoFreelancer signupDto) {
         // Convert services (JSON string to Set)
+        System.out.println(signupDto.getServices());
         Set<String> services = new HashSet<>(signupDto.getServices());
+        System.out.println(services);
 
         // Convert 'willingnessToTravel' string to Boolean (Handle "yes"/"no" values)
         Boolean willingnessToTravel = "yes".equalsIgnoreCase(String.valueOf(signupDto.getWillingnessToTravel()));

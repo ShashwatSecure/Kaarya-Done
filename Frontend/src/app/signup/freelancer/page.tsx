@@ -160,6 +160,22 @@ const FreelancerSignupPage = () => {
                 />
                 <input
                   type="text"
+                  name="city"
+                  placeholder="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                />
+                <input
+                  type="text"
+                  name="pincode"
+                  placeholder="pincode"
+                  value={formData.pincode}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                />
+                <input
+                  type="text"
                   name="aadhaarNumber"
                   placeholder="Aadhaar Number"
                   value={formData.aadhaarNumber}

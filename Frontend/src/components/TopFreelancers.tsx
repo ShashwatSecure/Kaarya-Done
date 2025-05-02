@@ -79,12 +79,12 @@ const FreelancerSection: FC = () => {
                 </div>
                 <p className="text-gray-700 mb-4">{freelancer.description}</p>
                 <div className="flex space-x-2">
-                  <button className="bg-[#ff9900] text-black px-4 py-2 rounded font-medium flex-1 hover:bg-orange-600 transition duration-300">
+                  <button className="bg-emerald-500 hover:bg-[#059669] text-white px-4 py-2 rounded font-medium flex-1 transition duration-300">
                     Book Now
                   </button>
                   <a
                     href="freelancer-detailpage.html"
-                    className="bg-transparent border border-[#ff9900] text-orange-500 px-4 py-2 rounded font-medium hover:bg-orange-500 hover:text-black transition duration-300"
+                    className="bg-transparent border border-[#ff9900] text-[#ff9900] px-4 py-2 rounded font-medium hover:bg-orange-500 hover:text-white transition duration-300"
                   >
                     Profile
                   </a>
@@ -94,7 +94,7 @@ const FreelancerSection: FC = () => {
           ))}
         </div>
         <div className="text-center mt-10">
-          <button className="bg-transparent border-2 border-orange-500 text-orange-500 px-6 py-3 rounded-full font-medium hover:bg-orange-500 hover:text-black transition duration-300">
+          <button className="bg-transparent border-2 border-orange-500 text-orange-500 px-6 py-3 rounded-full font-medium hover:bg-orange-500 hover:text-white transition duration-300">
             View All Freelancers
           </button>
         </div>

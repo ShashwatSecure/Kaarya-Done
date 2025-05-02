@@ -44,7 +44,6 @@ public class Freelancer {
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "freelancer_services", joinColumns = @JoinColumn(name = "freelancer_id"))
-    @Column(name = "service")
     private Set<String> services;
 
     @Column(name = "service_desc")
