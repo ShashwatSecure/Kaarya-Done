@@ -100,14 +100,14 @@ const FreelancerSignupPage = () => {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gray-900 text-white px-4 py-10">
-        <div className="max-w-3xl mx-auto bg-gray-800 p-8 rounded-xl shadow-lg">
+      <main className="min-h-screen bg-white text-black px-4 py-10">
+        <div className="max-w-3xl mx-auto bg-gray-200 p-8 rounded-xl shadow-lg">
           <h2 className="text-3xl font-bold mb-6 text-center">Join as a Freelancer</h2>
 
           <div className="mb-6 flex justify-between">
             {steps.map((label, idx) => (
               <div key={label} className="text-center flex-1">
-                <div className={`w-10 h-10 mx-auto mb-1 rounded-full flex items-center justify-center font-bold ${idx + 1 === step ? 'bg-[#ff9900] text-black' : 'bg-gray-700'}`}>
+                <div className={`w-10 h-10 mx-auto mb-1 rounded-full flex items-center justify-center font-bold ${idx + 1 === step ? 'bg-[#ff9900] text-black' : 'bg-gray-300'}`}>
                   {idx + 1}
                 </div>
                 <p className="text-sm">{label}</p>
@@ -127,7 +127,7 @@ const FreelancerSignupPage = () => {
                     name="profileImageUrl"
                     value={formData.profileImageUrl}
                     onChange={handleChange}
-                    className="w-full bg-gray-700 px-3 py-2 rounded"
+                    className="w-full bg-gray-100 px-3 py-2 rounded text-gray-700"
                     placeholder="Enter image URL"
                   />
                 </div>
@@ -138,7 +138,7 @@ const FreelancerSignupPage = () => {
                   placeholder="Full Name"
                   value={formData.fullName}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                   required
                 />
                 <input
@@ -147,7 +147,7 @@ const FreelancerSignupPage = () => {
                   placeholder="Mobile Number"
                   value={formData.mobile}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                   required
                 />
                 <input
@@ -156,23 +156,23 @@ const FreelancerSignupPage = () => {
                   placeholder="State"
                   value={formData.state}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                 />
                 <input
                   type="text"
                   name="city"
-                  placeholder="city"
+                  placeholder="City"
                   value={formData.city}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                 />
                 <input
                   type="text"
                   name="pincode"
-                  placeholder="pincode"
+                  placeholder="Pincode"
                   value={formData.pincode}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                 />
                 <input
                   type="text"
@@ -180,7 +180,7 @@ const FreelancerSignupPage = () => {
                   placeholder="Aadhaar Number"
                   value={formData.aadhaarNumber}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                 />
                 <input
                   type="text"
@@ -188,7 +188,7 @@ const FreelancerSignupPage = () => {
                   placeholder="PAN Number"
                   value={formData.panNumber}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-700 rounded"
+                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                 />
                 <textarea
                   name="bio"
@@ -196,7 +196,7 @@ const FreelancerSignupPage = () => {
                   onChange={handleChange}
                   rows={4}
                   placeholder="Short bio about you..."
-                  className="w-full px-3 py-2 bg-gray-700 rounded"
+                  className="w-full px-3 py-2 bg-gray-100 rounded text-black"
                 />
               </div>
             )}
@@ -214,7 +214,7 @@ const FreelancerSignupPage = () => {
                       services: Array.from(e.target.selectedOptions).map((o) => o.value),
                     })
                   }
-                  className="w-full px-3 py-2 bg-gray-700 rounded"
+                  className="w-full px-3 py-2 bg-gray-100 rounded text-black"
                 >
                   {['Plumbing', 'Electrical', 'Carpentry', 'Painting', 'Cleaning', 'Other'].map((s) => (
                     <option key={s} value={s}>{s}</option>
@@ -226,7 +226,7 @@ const FreelancerSignupPage = () => {
                   placeholder="Describe your service..."
                   value={formData.serviceDesc}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-gray-700 rounded"
+                  className="w-full px-3 py-2 bg-gray-100 rounded text-black"
                 />
                 <input
                   type="number"
@@ -234,7 +234,7 @@ const FreelancerSignupPage = () => {
                   value={formData.experience}
                   onChange={handleChange}
                   placeholder="Years of Experience"
-                  className="w-full px-3 py-2 bg-gray-700 rounded"
+                  className="w-full px-3 py-2 bg-gray-100 rounded text-black"
                 />
                 <input
                   type="number"
@@ -242,13 +242,13 @@ const FreelancerSignupPage = () => {
                   value={formData.hourlyRate}
                   onChange={handleChange}
                   placeholder="Hourly Rate"
-                  className="w-full px-3 py-2 bg-gray-700 rounded"
+                  className="w-full px-3 py-2 bg-gray-100 rounded text-black"
                 />
                 <select
                   name="willingnessToTravel"
                   value={formData.willingnessToTravel ? 'true' : ''}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-gray-700 rounded"
+                  className="w-full px-3 py-2 bg-gray-100 rounded text-black"
                 >
                   <option value="true">Yes</option>
                   <option value="">No</option>
@@ -273,16 +273,16 @@ const FreelancerSignupPage = () => {
 
             {/* Controls */}
             <div className="mt-6 flex justify-between items-center">
-              <button type="button" onClick={handleBack} className="text-gray-400 hover:text-white">Back</button>
+              <button type="button" onClick={handleBack} className="text-gray-700 hover:text-black">Back</button>
               {step < steps.length ? (
-                <button type="button" onClick={handleNext} className="bg-[#ff9900] text-black px-5 py-2 rounded">
+                <button type="button" onClick={handleNext} className="bg-[#ff9900] text-white px-5 py-2 rounded hover:bg-orange-500 transition">
                   Next
                 </button>
               ) : (
                 <button
                   type="submit"
                   disabled={isLoading || isFormSubmitted}
-                  className={`bg-[#ff9900] text-black px-5 py-2 rounded ${isLoading || isFormSubmitted ? 'opacity-50' : ''}`}
+                  className={`bg-[#ff9900] text-white px-5 py-2 rounded hover:bg-orange-500 transition ${isLoading || isFormSubmitted ? 'opacity-50' : ''}`}
                 >
                   {isLoading ? 'Submitting...' : 'Submit'}
                 </button>

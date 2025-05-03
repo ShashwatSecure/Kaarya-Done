@@ -50,7 +50,7 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => setIsRegisterModalOpen(true)}
-              className="bg-[#ff9900] text-black px-4 py-2 rounded font-medium hover:bg-orange-600"
+              className="bg-[#ff9900] text-white px-4 py-2 rounded font-medium hover:bg-orange-600"
             >
               SignUp
             </button>
@@ -83,7 +83,7 @@ export default function Navbar() {
           </button>
           <button
             onClick={() => setIsRegisterModalOpen(true)}
-            className="block bg-[#ff9900] text-black px-4 py-2 rounded font-medium hover:bg-orange-600 hover:text-white w-full text-center"
+            className="block bg-[#ff9900] text-white px-4 py-2 rounded font-medium hover:bg-orange-600 w-full text-center"
           >
             SignUp
           </button>

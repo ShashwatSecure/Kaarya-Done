@@ -86,13 +86,13 @@ export default function CustomerRegistration() {
   return (
     <>
       <Navbar />
-      <div className="bg-gray-900 text-gray-100 min-h-screen">
+      <div className="bg-white text-black min-h-screen">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col lg:flex-row gap-8 items-center">
             <div className="lg:w-1/2 w-full">
-              <div className="bg-gray-800 rounded-xl p-6 md:p-8">
+              <div className="bg-gray-200 rounded-xl p-6 md:p-8">
                 <h2 className="text-2xl font-bold mb-2">Sign up to book trusted freelancers near you</h2>
-                <p className="text-gray-400 mb-6">Create your account to access thousands of skilled professionals</p>
+                <p className="text-gray-700 mb-6">Create your account to access thousands of skilled professionals</p>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-4">
@@ -112,7 +112,7 @@ export default function CustomerRegistration() {
                           onChange={handleChange}
                           required
                           placeholder="John Doe"
-                          className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="w-full pl-10 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -131,7 +131,7 @@ export default function CustomerRegistration() {
                           onChange={handleChange}
                           required
                           placeholder="9876543210"
-                          className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="w-full pl-10 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         />
                       </div>
                     </div>
@@ -147,31 +147,29 @@ export default function CustomerRegistration() {
                           required
                           placeholder="Enter your address"
                           rows={4}
-                          className="w-full pl-3 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         />
                       </div>
-
-                      
                     </div>
-                    <div>
-  <label htmlFor="photo_url" className="block text-sm font-medium mb-1">Photo URL</label>
-  <div className="relative">
-    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-      <i className="fas fa-image text-gray-500"></i>
-    </div>
-    <input
-      type="text"
-      id="photo_url"
-      name="photo_url"
-      value={formData.photo_url}
-      onChange={handleChange}
-      required
-      placeholder="Enter photo URL"
-      className="w-full pl-10 pr-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-    />
-  </div>
-</div>
 
+                    <div>
+                      <label htmlFor="photo_url" className="block text-sm font-medium mb-1">Photo URL</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                          <i className="fas fa-image text-gray-500"></i>
+                        </div>
+                        <input
+                          type="text"
+                          id="photo_url"
+                          name="photo_url"
+                          value={formData.photo_url}
+                          onChange={handleChange}
+                          required
+                          placeholder="Enter photo URL"
+                          className="w-full pl-10 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="flex items-start">
@@ -197,7 +195,7 @@ export default function CustomerRegistration() {
                     {isLoading ? "Creating Account..." : "Create My Customer Account"}
                   </button>
 
-                  <div className="text-center text-sm text-gray-400">
+                  <div className="text-center text-sm text-gray-700">
                     Already have an account? {" "}
                     <Link href="/login/customer" className="text-orange-500 hover:underline">Login</Link>
                   </div>
@@ -206,7 +204,7 @@ export default function CustomerRegistration() {
             </div>
 
             <div className="hidden lg:block lg:w-1/2">
-              <div className="bg-gray-800 rounded-xl p-8 h-full flex flex-col justify-center items-center">
+              <div className="bg-gray-200 rounded-xl p-8 h-full flex flex-col justify-center items-center">
                 <img
                   src="https://cdn-icons-png.flaticon.com/512/3058/3058972.png"
                   alt="Customer Registration"
@@ -214,7 +212,7 @@ export default function CustomerRegistration() {
                 />
                 <div className="mt-8 text-center">
                   <h2 className="text-xl font-semibold mb-2">Find & Book Skilled Professionals</h2>
-                  <p className="text-gray-400">Join thousands of customers who trust Fixify for their home service needs</p>
+                  <p className="text-gray-700">Join thousands of customers who trust Fixify for their home service needs</p>
                   <div className="mt-6 space-y-4 max-w-md mx-auto">
                     <div className="flex items-center">
                       <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center mr-3">
