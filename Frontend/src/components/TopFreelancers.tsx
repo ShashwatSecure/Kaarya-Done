@@ -1,5 +1,7 @@
 import { FC } from 'react';
 import { FaStar } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import { kMaxLength } from 'buffer';
 
 const freelancers = [
   {
@@ -38,6 +40,7 @@ const freelancers = [
 ];
 
 const FreelancerSection: FC = () => {
+  const router = useRouter();
   return (
     <section className="py-16 px-6 bg-white">
       <div className="container mx-auto">
@@ -94,7 +97,7 @@ const FreelancerSection: FC = () => {
           ))}
         </div>
         <div className="text-center mt-10">
-          <button className="bg-transparent border-2 border-orange-500 text-orange-500 px-6 py-3 rounded-full font-medium hover:bg-orange-500 hover:text-white transition duration-300">
+          <button className="bg-transparent border-2 border-orange-500 text-orange-500 px-6 py-3 rounded-full font-medium hover:bg-orange-500 hover:text-white transition duration-300" onClick={()=>{router.push('/freelancers')}}>
             View All Freelancers
           </button>
         </div>
