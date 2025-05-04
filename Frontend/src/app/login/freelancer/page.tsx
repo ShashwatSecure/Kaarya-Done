@@ -31,6 +31,7 @@ const FreelancerLoginForm: React.FC = () => {
         setCheckingMobile(true);
         try {
           const res = await fetch(`http://localhost:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
+          console.log(res)
           if (!res.ok) throw new Error(`Status ${res.status}`);
           const data = await res.json();
           setMobileExists(data.exists);
