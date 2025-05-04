@@ -55,7 +55,7 @@ const FreelancerSignupPage = () => {
   useEffect(() => {
     const checkMobileNumber = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/auth/check-mobile?mobile=${formData.mobile}`);
+        const res = await fetch(`http://localhost:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
         if (!res.ok) throw new Error('Request failed');
         const text = await res.text();
         if (!text) throw new Error('Empty response');
@@ -103,7 +103,7 @@ const FreelancerSignupPage = () => {
       }
 
       const data = await res.json();
-
+      console.log(data)
       if (data.success) {
         setOtpSent(true);
         alert('OTP sent successfully');

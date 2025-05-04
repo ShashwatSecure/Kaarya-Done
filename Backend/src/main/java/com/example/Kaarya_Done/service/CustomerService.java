@@ -20,4 +20,9 @@ public class CustomerService {
         customer.setPhotoUrl(signupDtoCustomer.getPhoto_url());
         return customerRepository.save(customer);
     }
+
+    public boolean mobileExists(String mobile)
+    {
+        return customerRepository.existsByMobile(mobile);
+    }
 }

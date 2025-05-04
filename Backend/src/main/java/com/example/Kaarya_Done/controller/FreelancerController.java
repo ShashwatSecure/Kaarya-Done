@@ -60,7 +60,7 @@ public class FreelancerController {
         return ResponseEntity.ok(savedFreelancer);
     }
 
-    @GetMapping("/check-mobile")
+    @GetMapping("/check-mobile/freelancer")
     public ResponseEntity<?> checkMobileExists(@RequestParam String mobile) {
         boolean exists = freelancerService.mobileExists(mobile);
         Map<String, Boolean> response = new HashMap<>();

@@ -50,7 +50,7 @@ public class SmsController {
             responseMap.put("success", true);
             responseMap.put("message", "OTP sent successfully to " + mobile);
         }
-
+        System.out.println(responseMap);
         return ResponseEntity.ok(responseMap); // Return response with status and message
     }
 
