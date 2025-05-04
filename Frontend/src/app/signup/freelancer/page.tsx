@@ -97,10 +97,11 @@ const FreelancerSignupPage = () => {
     if (!selectedFile) return '';
     const data = new FormData();
     data.append('file', selectedFile);
-    const res = await fetch('http://localhost:8080/api/upload/profile-image', {
+    const res = await fetch('http://localhost:8080/api/upload/profile-image/freelancer', {
       method: 'POST',
       body: data,
     });
+    console.log(res);
     if (!res.ok) throw new Error('Failed to upload image');
     const result = await res.json();
     return result.imageUrl;
@@ -210,7 +211,7 @@ const FreelancerSignupPage = () => {
                         ) : (
                           <div className="text-center">
                             <span className="text-2xl font-bold">+</span>
-                            <p className="text-xs">Add Photo</p>
+                            <p className="text-xs"> Profile Picture</p>
                           </div>
                         )}
                       </div>
@@ -273,7 +274,7 @@ const FreelancerSignupPage = () => {
 
             <div className="flex justify-between mt-6">
               {step > 1 && <button type="button" onClick={handleBack} className="py-2 px-6 bg-gray-500 hover:bg-black text-white rounded">Back</button>}
-              {step < 3 ? <button type="button" onClick={handleNext} className="py-2 px-6 bg-[#ff9900] text-white rounded">Next</button> : <button type="submit" className="py-2 px-6 bg-[#ff9900] hover:bg-orange-500 text-white rounded">{isLoading ? 'Submitting...' : 'Submit'}</button>}
+              {step < 3 ? <button type="button" onClick={handleNext} className="py-2 px-6 bg-[#ff9900] text-white rounded">Next</button> : <button type="submit" className="py-2 px-6 bg-[#ff9900] hover:bg-orange-500 text-white rounded">{isLoading ? 'Submitting...' : 'Submit'}</button>}  
             </div>
           </form>
         </div>
