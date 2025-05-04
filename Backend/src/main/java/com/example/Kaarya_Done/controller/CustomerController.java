@@ -27,6 +27,7 @@ public class CustomerController {
         boolean exists = customerService.mobileExists(mobile);
         Map<String, Boolean> response = new HashMap<>();
         response.put("exists", exists);
+        System.out.println(response);
         return ResponseEntity.ok(response);
     }
 }

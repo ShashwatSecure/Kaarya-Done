@@ -36,6 +36,7 @@ export default function CustomerRegistration() {
         setCheckingMobile(true);
         try {
           const res = await fetch(`http://localhost:8080/api/auth/check-mobile/customer?mobile=${formData.mobile}`);
+          
           const data = await res.json();
           setMobileUnique(!data.exists);
         } catch (err) {
