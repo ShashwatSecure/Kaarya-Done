@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -58,4 +60,11 @@ public class FreelancerController {
         return ResponseEntity.ok(savedFreelancer);
     }
 
+    @GetMapping("/check-mobile")
+    public ResponseEntity<?> checkMobileExists(@RequestParam String mobile) {
+        boolean exists = freelancerService.mobileExists(mobile);
+        Map<String, Boolean> response = new HashMap<>();
+        response.put("exists", exists);
+        return ResponseEntity.ok(response);
+    }
 }

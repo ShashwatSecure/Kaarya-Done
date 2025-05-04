@@ -36,4 +36,9 @@ public class FreelancerService {
 
         return freelancerRepository.save(freelancer);
     }
+
+    public boolean mobileExists(String mobile)
+    {
+        return freelancerRepository.existsByMobile(mobile);
+    }
 }

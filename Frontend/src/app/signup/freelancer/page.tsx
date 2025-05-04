@@ -1,9 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+
+interface FormData {
+  fullName: string;
+  mobile: string;
+  profileImageUrl: string;
+  bio: string;
+  state: string;
+  aadhaarNumber: string;
+  panNumber: string;
+  city: string;
+  pincode: string;
+  services: string[];
+  serviceDesc: string;
+  experience: number;
+  hourlyRate: number;
+  willingnessToTravel: boolean;
+}
 
 const FreelancerSignupPage = () => {
   const router = useRouter();
@@ -11,8 +28,14 @@ const FreelancerSignupPage = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isFormSubmitted, setIsFormSubmitted] = useState(false);
+  const [mobileExists, setMobileExists] = useState<boolean | null>(null);
+  const [mobileStatus, setMobileStatus] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otpStatus, setOtpStatus] = useState('');
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     fullName: '',
     mobile: '',
     profileImageUrl: '',
@@ -22,22 +45,112 @@ const FreelancerSignupPage = () => {
     panNumber: '',
     city: '',
     pincode: '',
-    services: [] as string[],
+    services: [],
     serviceDesc: '',
     experience: 0,
     hourlyRate: 0,
     willingnessToTravel: true,
   });
 
+  useEffect(() => {
+    const checkMobileNumber = async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/auth/check-mobile?mobile=${formData.mobile}`);
+        if (!res.ok) throw new Error('Request failed');
+        const text = await res.text();
+        if (!text) throw new Error('Empty response');
+        const data = JSON.parse(text);
+        setMobileExists(data.exists);
+
+        if (data.exists) {
+          setMobileStatus('Mobile number has already been used.');
+        } else {
+          setMobileStatus('Mobile number is available.');
+        }
+      } catch (err) {
+        console.error('Mobile check failed:', err);
+        setMobileStatus('Error checking mobile number.');
+      }
+    };
+
+    if (/^\d{10}$/.test(formData.mobile)) {
+      checkMobileNumber();
+    } else {
+      setMobileExists(null);
+      setMobileStatus('');
+    }
+  }, [formData.mobile]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
-    if (name === 'willingnessToTravel') {
-      setFormData({ ...formData, [name]: value === 'true' });
-    } else {
-      setFormData({ ...formData, [name]: value });
+  const sendOtp = async (mobile: string) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/sms/send-otp?mobile=${mobile}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mobile }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (data.success) {
+        setOtpSent(true);
+        alert('OTP sent successfully');
+      } else {
+        alert('Failed to send OTP: ' + data.message);
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error:', error.message);
+        alert('There was an error sending OTP: ' + error.message);
+      } else {
+        console.error('An unknown error occurred');
+        alert('An unknown error occurred');
+      }
+    }
+  };
+
+  const verifyOtp = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mobile: formData.mobile, otp }),
+      });
+      
+      
+
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      const data = await res.json();
+      console.log(data)
+      if (data.message==="OTP verified successfully") {
+        setOtpVerified(true);
+        setOtpStatus('OTP verified successfully.');
+      } else {
+        setOtpVerified(false);
+        setOtpStatus('Invalid OTP. Please try again.');
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('OTP verification error:', error.message);
+        setOtpStatus('Error verifying OTP: ' + error.message);
+      } else {
+        setOtpStatus('Unknown error occurred during OTP verification.');
+      }
     }
   };
 
@@ -53,15 +166,26 @@ const FreelancerSignupPage = () => {
     if (e) e.preventDefault();
     setIsLoading(true);
 
-    // Validation
     if (!/^\d{10}$/.test(formData.mobile)) {
       alert('Mobile number must be 10 digits!');
       setIsLoading(false);
       return;
     }
 
+    if (!otpVerified) {
+      alert('Please verify the OTP before submitting.');
+      setIsLoading(false);
+      return;
+    }
+
     if (!/^\d{12}$/.test(formData.aadhaarNumber)) {
       alert('Aadhaar number must be 12 digits!');
+      setIsLoading(false);
+      return;
+    }
+
+    if (mobileExists) {
+      alert('Mobile number already registered!');
       setIsLoading(false);
       return;
     }
@@ -116,10 +240,8 @@ const FreelancerSignupPage = () => {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {/* Step 1 */}
             {step === 1 && (
               <div className="space-y-6">
-                {/* Image URL input */}
                 <div>
                   <label className="block text-sm mb-1">Profile Photo URL</label>
                   <input
@@ -141,6 +263,7 @@ const FreelancerSignupPage = () => {
                   className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                   required
                 />
+
                 <input
                   type="tel"
                   name="mobile"
@@ -150,46 +273,53 @@ const FreelancerSignupPage = () => {
                   className="w-full px-4 py-3 bg-gray-100 rounded text-black"
                   required
                 />
-                <input
-                  type="text"
-                  name="state"
-                  placeholder="State"
-                  value={formData.state}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
-                />
-                <input
-                  type="text"
-                  name="city"
-                  placeholder="City"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
-                />
-                <input
-                  type="text"
-                  name="pincode"
-                  placeholder="Pincode"
-                  value={formData.pincode}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
-                />
-                <input
-                  type="text"
-                  name="aadhaarNumber"
-                  placeholder="Aadhaar Number"
-                  value={formData.aadhaarNumber}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
-                />
-                <input
-                  type="text"
-                  name="panNumber"
-                  placeholder="PAN Number"
-                  value={formData.panNumber}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-100 rounded text-black"
-                />
+                {mobileStatus && (
+                  <p
+                    className={`text-sm mt-1 ${
+                      mobileStatus === 'Mobile number has already been used.' ? 'text-red-500' : 'text-green-600'
+                    }`}
+                  >
+                    {mobileStatus}
+                  </p>
+                )}
+                {mobileStatus === 'Mobile number is available.' && !otpSent && (
+                  <button
+                    type="button"
+                    onClick={() => sendOtp(formData.mobile)}
+                    className="text-sm text-blue-600 underline mt-1"
+                  >
+                    Send OTP
+                  </button>
+                )}
+
+                {otpSent && (
+                  <div className="space-y-2 mt-2">
+                    <input
+                      type="text"
+                      name="otp"
+                      placeholder="Enter OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded text-black"
+                    />
+                    <button
+                      type="button"
+                      onClick={verifyOtp}
+                      className="py-2 px-4 bg-green-600 text-white rounded"
+                    >
+                      Verify OTP
+                    </button>
+                    {otpStatus && (
+                      <p className={`text-sm ${otpVerified ? 'text-green-600' : 'text-red-600'}`}>{otpStatus}</p>
+                    )}
+                  </div>
+                )}
+
+                <input type="text" name="state" placeholder="State" value={formData.state} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
+                <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
+                <input type="text" name="pincode" placeholder="Pincode" value={formData.pincode} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
+                <input type="text" name="aadhaarNumber" placeholder="Aadhaar Number" value={formData.aadhaarNumber} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
+                <input type="text" name="panNumber" placeholder="PAN Number" value={formData.panNumber} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
                 <textarea
                   name="bio"
                   value={formData.bio}
@@ -199,6 +329,7 @@ const FreelancerSignupPage = () => {
                   className="w-full px-3 py-2 bg-gray-100 rounded text-black"
                 />
               </div>
+              
             )}
 
             {/* Step 2 */}
@@ -244,15 +375,20 @@ const FreelancerSignupPage = () => {
                   placeholder="Hourly Rate"
                   className="w-full px-3 py-2 bg-gray-100 rounded text-black"
                 />
-                <select
-                  name="willingnessToTravel"
-                  value={formData.willingnessToTravel ? 'true' : ''}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-gray-100 rounded text-black"
-                >
-                  <option value="true">Yes</option>
-                  <option value="">No</option>
-                </select>
+                <label htmlFor="willingnessToTravel" className="block text-sm font-medium text-gray-700 mb-1">
+  Are you willing to travel?
+</label>
+<select
+  id="willingnessToTravel"
+  name="willingnessToTravel"
+  value={formData.willingnessToTravel.toString()}
+  onChange={handleChange}
+  className="w-full px-3 py-2 bg-gray-100 rounded text-black"
+>
+  <option value="true">Yes</option>
+  <option value="false">No</option>
+</select>
+
               </div>
             )}
 
@@ -270,20 +406,18 @@ const FreelancerSignupPage = () => {
                 </div>
               </div>
             )}
-
-            {/* Controls */}
-            <div className="mt-6 flex justify-between items-center">
-              <button type="button" onClick={handleBack} className="text-gray-700 hover:text-black">Back</button>
-              {step < steps.length ? (
-                <button type="button" onClick={handleNext} className="bg-[#ff9900] text-white px-5 py-2 rounded hover:bg-orange-500 transition">
+            <div className="flex justify-between items-center mt-6">
+              {step > 1 && (
+                <button type="button" onClick={handleBack} className="py-2 px-6 bg-gray-500 hover:bg-black text-white rounded">
+                  Back
+                </button>
+              )}
+              {step < 3 ? (
+                <button type="button" onClick={handleNext} className="py-2 px-6 bg-[#ff9900] text-white rounded">
                   Next
                 </button>
               ) : (
-                <button
-                  type="submit"
-                  disabled={isLoading || isFormSubmitted}
-                  className={`bg-[#ff9900] text-white px-5 py-2 rounded hover:bg-orange-500 transition ${isLoading || isFormSubmitted ? 'opacity-50' : ''}`}
-                >
+                <button type="submit" className="py-2 px-6 bg-[#ff9900] hover:bg-orange-500 text-white rounded">
                   {isLoading ? 'Submitting...' : 'Submit'}
                 </button>
               )}
