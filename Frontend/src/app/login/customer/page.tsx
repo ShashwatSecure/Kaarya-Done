@@ -13,6 +13,8 @@ const CustomerLoginForm: React.FC = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [error, setError] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -46,15 +48,39 @@ const CustomerLoginForm: React.FC = () => {
     checkMobile();
   }, [formData.mobile]);
 
+  useEffect(() => {
+    if (statusMessage || error) {
+      const timeout = setTimeout(() => {
+        setStatusMessage('');
+        setError('');
+      }, 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [statusMessage, error]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (timerActive && resendTimer > 0) {
+      timer = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setTimerActive(false);
+    }
+    return () => clearInterval(timer);
+  }, [timerActive, resendTimer]);
+
   const handleSendOtp = async () => {
     try {
       const res = await fetch(`http://localhost:8080/api/sms/send-otp?mobile=${formData.mobile}`, {
-        method: 'POST'
+        method: 'POST',
       });
       const data = await res.json();
       if (data.success) {
         setOtpSent(true);
         setStatusMessage('OTP sent successfully.');
+        setResendTimer(30);
+        setTimerActive(true);
       } else {
         setError(data.message || 'Failed to send OTP.');
       }
@@ -68,16 +94,13 @@ const CustomerLoginForm: React.FC = () => {
     try {
       const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile: formData.mobile, otp }),
       });
       const data = await res.json();
       if (data.success) {
         setOtpVerified(true);
         setStatusMessage('OTP verified! Logging in...');
-        // Simulate login or redirect
         console.log('Customer logged in successfully:', formData.mobile);
       } else {
         setError(data.message || 'Invalid OTP.');
@@ -85,6 +108,13 @@ const CustomerLoginForm: React.FC = () => {
     } catch (err) {
       console.error('OTP verification failed:', err);
       setError('Error verifying OTP.');
+    }
+  };
+
+  const handleOtpKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleVerifyOtp();
     }
   };
 
@@ -130,18 +160,34 @@ const CustomerLoginForm: React.FC = () => {
                     name="otp"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
+                    onKeyDown={handleOtpKeyPress}
                     className="w-full bg-gray-100 border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#ff9900] text-black"
                     maxLength={6}
                     required
                   />
                 </div>
+
                 <button
                   type="button"
                   onClick={handleVerifyOtp}
-                  className="bg-[#ff9900] text-white w-full py-3 rounded font-bold hover:bg-orange-500 mb-4 transition"
+                  className="bg-[#ff9900] text-white w-full py-3 rounded font-bold hover:bg-orange-500 mb-2 transition"
                 >
                   Verify OTP
                 </button>
+
+                {timerActive ? (
+                  <p className="text-sm text-gray-600 text-center mb-2">
+                    Resend OTP in {resendTimer} sec
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    className="text-[#ff9900] font-medium text-sm hover:underline w-full mb-4"
+                  >
+                    Resend OTP
+                  </button>
+                )}
               </>
             )}
           </form>

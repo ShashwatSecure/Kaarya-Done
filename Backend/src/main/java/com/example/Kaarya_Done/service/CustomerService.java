@@ -17,12 +17,13 @@ public class CustomerService {
         customer.setFullName(signupDtoCustomer.getFull_name());
         customer.setMobile(signupDtoCustomer.getMobile());
         customer.setAddress(signupDtoCustomer.getAddress());
-        customer.setPhotoUrl(signupDtoCustomer.getPhoto_url());
+        customer.setState(signupDtoCustomer.getState());
+        customer.setCity(signupDtoCustomer.getCity());
+        customer.setPincode(signupDtoCustomer.getPincode());
         return customerRepository.save(customer);
     }
 
-    public boolean mobileExists(String mobile)
-    {
+    public boolean mobileExists(String mobile) {
         return customerRepository.existsByMobile(mobile);
     }
 }

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.validator.constraints.UniqueElements;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +26,15 @@ public class Customer {
 
     @Column(length = 500)
     private String address;
+
+    @Column(length = 100)
+    private String state;
+
+    @Column(length = 100)
+    private String city;
+
+    @Column(length = 10)
+    private String pincode;
 
     @Column(name = "photo_url", length = 255)
     private String photoUrl;

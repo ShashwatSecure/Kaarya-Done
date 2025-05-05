@@ -4,18 +4,22 @@ public class SignupDtoCustomer {
     private String full_name;
     private String mobile;
     private String address;
-    private String photo_url;
+    private String state;
+    private String city;
+    private String pincode;
 
     // Default constructor
     public SignupDtoCustomer() {
     }
 
     // Parameterized constructor
-    public SignupDtoCustomer(String full_name, String mobile, String address, String photo_url) {
+    public SignupDtoCustomer(String full_name, String mobile, String address, String state, String city, String pincode) {
         this.full_name = full_name;
         this.mobile = mobile;
         this.address = address;
-        this.photo_url = photo_url;
+        this.state = state;
+        this.city = city;
+        this.pincode = pincode;
     }
 
     // Getters and Setters
@@ -43,21 +47,39 @@ public class SignupDtoCustomer {
         this.address = address;
     }
 
-    public String getPhoto_url() {
-        return photo_url;
+    public String getState() {
+        return state;
     }
 
-    public void setPhoto_url(String photo_url) {
-        this.photo_url = photo_url;
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public void setPincode(String pincode) {
+        this.pincode = pincode;
     }
 
     @Override
     public String toString() {
-        return "SignupDto{" +
+        return "SignupDtoCustomer{" +
                 "full_name='" + full_name + '\'' +
                 ", mobile='" + mobile + '\'' +
                 ", address='" + address + '\'' +
-                ", photo_url='" + photo_url + '\'' +
+                ", state='" + state + '\'' +
+                ", city='" + city + '\'' +
+                ", pincode='" + pincode + '\'' +
                 '}';
     }
 }

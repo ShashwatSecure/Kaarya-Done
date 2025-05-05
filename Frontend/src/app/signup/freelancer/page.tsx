@@ -36,6 +36,7 @@ const FreelancerSignupPage = () => {
   const [otpStatus, setOtpStatus] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
 
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
@@ -78,6 +79,13 @@ const FreelancerSignupPage = () => {
     }
   }, [formData.mobile]);
 
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: name === 'willingnessToTravel' ? value === 'true' : value });
@@ -101,7 +109,6 @@ const FreelancerSignupPage = () => {
       method: 'POST',
       body: data,
     });
-    console.log(res);
     if (!res.ok) throw new Error('Failed to upload image');
     const result = await res.json();
     return result.imageUrl;
@@ -117,6 +124,7 @@ const FreelancerSignupPage = () => {
       const data = await res.json();
       if (data.success) {
         setOtpSent(true);
+        setCooldown(30);
         alert('OTP sent successfully');
       } else {
         alert('Failed to send OTP: ' + data.message);
@@ -134,15 +142,25 @@ const FreelancerSignupPage = () => {
         body: JSON.stringify({ mobile: formData.mobile, otp }),
       });
       const data = await res.json();
-      setOtpVerified(data.message === 'OTP verified successfully');
+      const success = data.message === 'OTP verified successfully';
+      setOtpVerified(success);
       setOtpStatus(data.message);
     } catch (error: any) {
       setOtpStatus('Error verifying OTP: ' + error.message);
     }
   };
 
-  const handleNext = () => { if (step < steps.length) setStep(step + 1); };
-  const handleBack = () => { if (step > 1) setStep(step - 1); };
+  const handleNext = () => {
+    if (step === 1 && !otpVerified) {
+      alert('Please verify OTP before proceeding.');
+      return;
+    }
+    if (step < steps.length) setStep(step + 1);
+  };
+
+  const handleBack = () => {
+    if (step > 1) setStep(step - 1);
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -216,26 +234,26 @@ const FreelancerSignupPage = () => {
                         )}
                       </div>
                     </label>
-                    <input
-                      id="profile-photo-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
+                    <input id="profile-photo-upload" type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
                   </div>
                 </div>
                 <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" required />
                 <input type="tel" name="mobile" placeholder="Mobile Number" value={formData.mobile} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" required />
                 {mobileStatus && <p className={`text-sm mt-1 ${mobileStatus.includes('used') ? 'text-red-500' : 'text-green-600'}`}>{mobileStatus}</p>}
-                {mobileStatus === 'Mobile number is available.' && !otpSent && <button type="button" onClick={() => sendOtp(formData.mobile)} className="text-sm text-blue-600 underline">Send OTP</button>}
-                {otpSent && (
-                  <div className="space-y-2">
-                    <input type="text" name="otp" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full px-4 py-2 bg-white border border-gray-300 rounded text-black" />
-                    <button type="button" onClick={verifyOtp} className="py-2 px-4 bg-green-600 text-white rounded">Verify OTP</button>
-                    {otpStatus && <p className={`text-sm ${otpVerified ? 'text-green-600' : 'text-red-600'}`}>{otpStatus}</p>}
-                  </div>
+
+                {!otpVerified && mobileStatus === 'Mobile number is available.' && (
+                  <>
+                    <button type="button" onClick={() => sendOtp(formData.mobile)} className="text-sm text-blue-600 underline disabled:text-gray-400" disabled={cooldown > 0}>
+                      {cooldown > 0 ? `Send OTP (wait ${cooldown}s)` : 'Send OTP'}
+                    </button>
+                    <input type="text" name="otp" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full px-4 py-2 bg-white border border-gray-300 rounded text-black mt-2" />
+                    <button type="button" onClick={verifyOtp} className="py-2 px-4 bg-green-600 text-white rounded mt-2">Verify OTP</button>
+                  </>
                 )}
+
+                {otpVerified && <p className="text-sm text-green-600">OTP verified successfully</p>}
+                {otpStatus && !otpVerified && <p className="text-sm text-red-600">{otpStatus}</p>}
+
                 <input type="text" name="state" placeholder="State" value={formData.state} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
                 <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
                 <input type="text" name="pincode" placeholder="Pincode" value={formData.pincode} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />

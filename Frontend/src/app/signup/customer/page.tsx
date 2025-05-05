@@ -11,19 +11,29 @@ export default function CustomerRegistration() {
     full_name: "",
     mobile: "",
     address: "",
-    photo_url: "",
+    state: "",
+    city: "",
+    pincode: ""
   });
+
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [mobileUnique, setMobileUnique] = useState(false);
+  const [mobileUnique, setMobileUnique] = useState(true);
   const [checkingMobile, setCheckingMobile] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+
+    // Reset mobile uniqueness and OTP state if mobile changes
+    if (name === "mobile") {
+      setOtpSent(false);
+      setOtpVerified(false);
+      setOtp("");
+    }
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,13 +42,13 @@ export default function CustomerRegistration() {
 
   useEffect(() => {
     const checkMobile = async () => {
-      if (formData.mobile.length === 10) {
+      const mobile = formData.mobile.trim();
+      if (mobile.length === 10) {
         setCheckingMobile(true);
         try {
-          const res = await fetch(`http://localhost:8080/api/auth/check-mobile/customer?mobile=${formData.mobile}`);
-          
+          const res = await fetch(`http://localhost:8080/api/auth/check-mobile/customer?mobile=${mobile}`);
           const data = await res.json();
-          setMobileUnique(!data.exists);
+          setMobileUnique(!data.exists); // true if mobile is unique
         } catch (err) {
           console.error('Error checking mobile uniqueness:', err);
           setMobileUnique(false);
@@ -47,6 +57,7 @@ export default function CustomerRegistration() {
         }
       }
     };
+
     checkMobile();
   }, [formData.mobile]);
 
@@ -72,9 +83,7 @@ export default function CustomerRegistration() {
     try {
       const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile: formData.mobile, otp }),
       });
       const data = await res.json();
@@ -96,56 +105,59 @@ export default function CustomerRegistration() {
 
     if (!/^\d{10}$/.test(formData.mobile)) {
       alert("Mobile number must be 10 digits!");
+      setIsLoading(false);
       return;
     }
+
+    if (!mobileUnique) {
+      alert("Mobile number already in use!");
+      setIsLoading(false);
+      return;
+    }
+
     if (!agreeToTerms) {
       alert("You must agree to the Terms & Conditions");
+      setIsLoading(false);
       return;
     }
+
     if (!otpVerified) {
       alert("Please verify your OTP before submitting.");
+      setIsLoading(false);
       return;
     }
 
     try {
       const response = await fetch("http://localhost:8080/api/auth/signup/customer", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          full_name: formData.full_name,
-          mobile: formData.mobile,
-          address: formData.address,
-          photo_url: formData.photo_url,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Signup failed!");
       }
-      alert("Account created successfully! Welcome to Fixify.");
-      router.push("/login/customer");
 
-    } catch (error) {
-      console.error("Signup error:", error);
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert("An unexpected error occurred.");
-      }
-    } finally {
-      setIsLoading(false);
+      alert("Account created successfully! Welcome to Fixify.");
       setFormData({
         full_name: "",
         mobile: "",
         address: "",
-        photo_url: "",
+        state: "",
+        city: "",
+        pincode: "",
       });
       setAgreeToTerms(false);
       setOtp("");
       setOtpSent(false);
       setOtpVerified(false);
+      router.push("/login/customer");
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert(error instanceof Error ? error.message : "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -166,36 +178,62 @@ export default function CustomerRegistration() {
 
                     <div>
                       <label htmlFor="full_name" className="block text-sm font-medium mb-1">Full Name</label>
-                      <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleChange} required placeholder="John Doe" className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md" />
+                      <input type="text" id="full_name" name="full_name" value={formData.full_name} onChange={handleChange} required className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md" />
                     </div>
 
                     <div>
                       <label htmlFor="mobile" className="block text-sm font-medium mb-1">Mobile Number</label>
-                      <input type="tel" id="mobile" name="mobile" value={formData.mobile} onChange={handleChange} required placeholder="9876543210" className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md" />
+                      <input type="tel" id="mobile" name="mobile" value={formData.mobile} onChange={handleChange} required className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md" />
                       {checkingMobile && <p className="text-sm text-gray-600 mt-1">Checking mobile number...</p>}
+                      {!mobileUnique && !checkingMobile && (
+                        <p className="text-sm text-red-600 mt-1">Mobile number already in use</p>
+                      )}
                       {formData.mobile.length === 10 && mobileUnique && !otpSent && (
-                        <button type="button" onClick={handleSendOtp} className="mt-2 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-md">Send OTP</button>
+                        <button type="button" onClick={handleSendOtp} className="mt-2 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-md">
+                          Send OTP
+                        </button>
                       )}
                     </div>
 
-                    {otpSent && (
+                    {otpSent && !otpVerified && (
                       <>
                         <div className="mt-4">
                           <label htmlFor="otp" className="block text-sm font-medium mb-1">Enter OTP</label>
                           <input type="text" id="otp" name="otp" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter the OTP" className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md" />
                         </div>
-                        <button type="button" onClick={handleVerifyOtp} className="mt-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md">Verify OTP</button>
+                        <button type="button" onClick={handleVerifyOtp} className="mt-2 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md">
+                          Verify OTP
+                        </button>
                       </>
                     )}
 
                     <div>
-                      <label htmlFor="address" className="block text-sm font-medium mb-1">Address</label>
-                      <textarea id="address" name="address" value={formData.address} onChange={handleChange} required rows={4} placeholder="Enter your address" className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md" />
+                      <label htmlFor="state" className="block text-sm font-medium mb-1">State</label>
+                      <select id="state" name="state" value={formData.state} onChange={handleChange} required className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md">
+                        <option value="">Select State</option>
+                        <option value="West Bengal">West Bengal</option>
+                      </select>
                     </div>
 
                     <div>
-                      <label htmlFor="photo_url" className="block text-sm font-medium mb-1">Photo URL</label>
-                      <input type="text" id="photo_url" name="photo_url" value={formData.photo_url} onChange={handleChange} required placeholder="Enter photo URL" className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md" />
+                      <label htmlFor="city" className="block text-sm font-medium mb-1">City</label>
+                      <select id="city" name="city" value={formData.city} onChange={handleChange} required className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md">
+                        <option value="">Select City</option>
+                        <option value="Kolkata">Kolkata</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="pincode" className="block text-sm font-medium mb-1">Pincode (Optional)</label>
+                      <select id="pincode" name="pincode" value={formData.pincode} onChange={handleChange} className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md">
+                        <option value="">Select Pincode</option>
+                        <option value="700102">700102</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="locality" className="block text-sm font-medium mb-1">Locality (Optional)</label>
+                      <textarea id="locality" name="address" value={formData.address} onChange={handleChange} rows={2} placeholder="Enter locality (e.g., Keshtopur, New Town)" className="w-full pl-3 pr-3 py-2 bg-gray-100 border border-gray-300 rounded-md" />
                     </div>
                   </div>
 
@@ -224,24 +262,14 @@ export default function CustomerRegistration() {
                   <h2 className="text-xl font-semibold mb-2">Find & Book Skilled Professionals</h2>
                   <p className="text-gray-700">Join thousands of customers who trust Fixify for their home service needs</p>
                   <div className="mt-6 space-y-4 max-w-md mx-auto">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center mr-3">
-                        <i className="fas fa-check text-white text-xs"></i>
+                    {["Verified & background-checked professionals", "Transparent pricing & reviews", "Easy booking & secure payments"].map((item, i) => (
+                      <div key={i} className="flex items-center">
+                        <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center mr-3">
+                          <i className="fas fa-check text-white text-xs"></i>
+                        </div>
+                        <span>{item}</span>
                       </div>
-                      <span>Verified & background-checked professionals</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center mr-3">
-                        <i className="fas fa-check text-white text-xs"></i>
-                      </div>
-                      <span>Transparent pricing & reviews</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center mr-3">
-                        <i className="fas fa-check text-white text-xs"></i>
-                      </div>
-                      <span>Easy booking & secure payments</span>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
