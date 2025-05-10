@@ -2,16 +2,16 @@ package com.example.Kaarya_Done.service;
 
 import com.example.Kaarya_Done.dto.SignupDtoFreelancer;
 import com.example.Kaarya_Done.entity.Freelancer;
-import com.example.Kaarya_Done.entity.ProvidedService;
+import com.example.Kaarya_Done.entity.ServiceCategory;
 import com.example.Kaarya_Done.repository.FreelancerRepository;
-import com.example.Kaarya_Done.repository.ProvidedServiceRepository;
+import com.example.Kaarya_Done.repository.ServiceCategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,22 +21,17 @@ public class FreelancerService {
     private FreelancerRepository freelancerRepository;
 
     @Autowired
-    private ProvidedServiceRepository providedServiceRepository;
+    private ServiceCategoryRepository serviceCategoryRepository;
 
     @Transactional
     public Freelancer createFreelancer(SignupDtoFreelancer dto) {
-        // Convert Set<Long> to List<Long>
-        List<Long> serviceIds = dto.getServiceIds().stream().collect(Collectors.toList());
+        List<Integer> serviceCategoryIds = new ArrayList<>(dto.getServiceCategoryIds());
+        List<ServiceCategory> services = serviceCategoryRepository.findAllById(serviceCategoryIds);
 
-        // Fetch services from the database using the provided service IDs
-        List<ProvidedService> services = providedServiceRepository.findAllByIdIn(serviceIds);
-
-        // Check if any provided services are missing
-        if (services.size() != serviceIds.size()) {
+        if (services.size() != serviceCategoryIds.size()) {
             throw new IllegalArgumentException("Some provided services are not found");
         }
 
-        // Create the Freelancer entity
         Freelancer freelancer = Freelancer.builder()
                 .fullName(dto.getFullName())
                 .mobile(dto.getMobile())
@@ -47,15 +42,18 @@ public class FreelancerService {
                 .aadhaarNumber(dto.getAadhaarNumber())
                 .panNumber(dto.getPanNumber())
                 .profileImageUrl(dto.getProfileImageUrl())
-                .servicesOffered(new HashSet<>(services))  // Add the fetched services to freelancer
                 .experience(dto.getExperience())
                 .isVerified(false)
                 .isAvailable(true)
                 .build();
 
-        // Save the freelancer to the database
+        // Sync both sides of the relationship
+        services.forEach(service -> service.getFreelancers().add(freelancer));
+        freelancer.setServiceCategories(new HashSet<>(services));
+
         return freelancerRepository.save(freelancer);
     }
+
 
     public boolean mobileExists(String mobile) {
         return freelancerRepository.existsByMobile(mobile);

@@ -23,7 +23,7 @@ public class SignupDtoFreelancer {
     private String profileImageUrl;
 
     // Step 2: Services and Experience
-    private Set<Long> serviceIds = Collections.emptySet();  // Default to an empty set
+    private Set<Integer> serviceCategoryIds = Collections.emptySet();  // Changed from serviceIds to serviceCategoryIds
 
     private Integer experience;    // Years of experience
 }

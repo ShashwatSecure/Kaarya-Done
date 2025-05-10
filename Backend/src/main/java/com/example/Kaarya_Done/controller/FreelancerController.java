@@ -26,6 +26,8 @@ public class FreelancerController {
             return ResponseEntity.badRequest().body(error);
         }
 
+        System.out.println("Service Category IDs from frontend: " + signupDto.getServiceCategoryIds());
+
         // Create and save the freelancer
         Freelancer savedFreelancer = freelancerService.createFreelancer(signupDto);
         return ResponseEntity.ok(savedFreelancer);

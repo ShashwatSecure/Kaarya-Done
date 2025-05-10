@@ -43,13 +43,13 @@ public class Freelancer {
      * Services offered by the freelancer.
      * Many freelancers can offer many services.
      */
-    @ManyToMany
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
             name = "freelancer_services",
             joinColumns = @JoinColumn(name = "freelancer_id"),
-            inverseJoinColumns = @JoinColumn(name = "service_id")
+            inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    private Set<ProvidedService> servicesOffered;
+    private Set<ServiceCategory> serviceCategories;
 
     @Column(name = "experience")
     private Integer experience;

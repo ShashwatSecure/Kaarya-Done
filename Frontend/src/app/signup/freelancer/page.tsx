@@ -15,7 +15,7 @@ interface FormData {
   panNumber: string;
   city: string;
   pincode: string;
-  services: string[]; // service IDs
+  serviceCategoryIds: string[]; // service IDs
   experience: number;
 }
 
@@ -45,7 +45,7 @@ const FreelancerSignupPage = () => {
     panNumber: '',
     city: '',
     pincode: '',
-    services: [],
+    serviceCategoryIds: [],
     experience: 0,
   });
 
@@ -174,7 +174,7 @@ const FreelancerSignupPage = () => {
         aadhaar_number: formData.aadhaarNumber,
         pan_number: formData.panNumber,
         profile_image_url: imageUrl,
-        services: formData.services.map((id) => parseInt(id)), // Send IDs as integers
+        services: formData.serviceCategoryIds.map((id) => parseInt(id)), // Send IDs as integers
       };
 
       const res = await fetch('http://localhost:8080/api/auth/signup/freelancer', {
@@ -289,19 +289,25 @@ const FreelancerSignupPage = () => {
             {step === 2 && (
               <div className="space-y-6">
                 <label className='font-medium'>Select your service category (you may choose more than one):<br /> <span className='text-gray-600 font-light'>Press 'ctrl' + click on the options to select multiple.</span></label>
-                <select multiple name="services" value={formData.services} onChange={(e) => setFormData({ ...formData, services: Array.from(e.target.selectedOptions).map((o) => o.value) })} className="w-full px-3 py-2 bg-gray-100 rounded text-black mt-2">
+                <select
+  multiple
+  name="serviceCategoryIds"
+  value={formData.serviceCategoryIds}
+  onChange={(e) => setFormData({ ...formData, serviceCategoryIds: Array.from(e.target.selectedOptions).map((o) => o.value) })}
+  className="w-full px-3 py-2 bg-gray-100 rounded text-black mt-2"
+>
+  <option value="1">Electrician</option>
+  <option value="2">Plumber</option>
+  <option value="3">Carpenter</option>
+  <option value="4">TV Technician</option>
+  <option value="5">Computer Technician</option>
+  <option value="6">Mobile Technician</option>
+  <option value="7">Painter</option>
+  <option value="8">Sweeper</option>
+  <option value="9">Cook</option>
+  <option value="10">Mechanic</option>
+</select>
 
-                  <option value="1">Electrician</option>
-                  <option value="2">Plumber</option>
-                  <option value="3">Car Mechanic</option>
-                  <option value="4">Sweeper</option>
-                  <option value="5">Carpenter</option>
-                  <option value="6">AC Technician</option>
-                  <option value="7">Maid</option>
-                  <option value="8">Electronic Technician</option>
-                  <option value="9">Computer Technician</option>
-                  <option value="10">Mobile Technician</option>
-                </select>
                 <label className='font-medium '>Experience (in years)</label>
                 <input type="number" name="experience" placeholder="Experience (years)" value={formData.experience} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black" />
               </div>
@@ -314,7 +320,7 @@ const FreelancerSignupPage = () => {
                 <p><strong>Mobile:</strong> {formData.mobile}</p>
                 <p><strong>State:</strong> {formData.state}</p>
                 <p><strong>City:</strong> {formData.city}</p>
-                <p><strong>Services:</strong> {formData.services.join(', ')}</p>
+                <p><strong>Services:</strong> {formData.serviceCategoryIds.join(', ')}</p>
                 <p><strong>Experience:</strong> {formData.experience} years</p>
               </div>
             )}

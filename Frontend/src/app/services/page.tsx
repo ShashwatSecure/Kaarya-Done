@@ -9,6 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Fuse from 'fuse.js';
 
 // Define the service type
 type Service = {
@@ -16,6 +17,7 @@ type Service = {
   title: string;
   description: string;
   icon: any;
+  category: string;
 };
 
 const filterCategories = [
@@ -23,55 +25,55 @@ const filterCategories = [
 ];
 
 const services: Service[] = [
-  // Plumbing Services
-  { id: 1, title: "Wash Basin Repair", description: "Fix leaks, cracks, or installation", icon: faTint },
-  { id: 2, title: "Tap/Faucet Repair", description: "Dripping tap replacement or repair", icon: faWrench },
-  { id: 3, title: "Pipe Unclogging", description: "Blocked kitchen/bathroom pipes", icon: faFilter },
-  { id: 4, title: "Toilet Flush Repair", description: "Fix running or broken flush systems", icon: faToilet },
-  { id: 5, title: "Water Tank Cleaning", description: "Overhead tank sanitization", icon: faTint },
+  // Home Services - Plumbing
+  { id: 1, title: "Wash Basin Repair", description: "Fix leaks, cracks, or installation", icon: faTint, category: 'Home Services' },
+  { id: 2, title: "Tap/Faucet Repair", description: "Dripping tap replacement or repair", icon: faWrench, category: 'Home Services' },
+  { id: 3, title: "Pipe Unclogging", description: "Blocked kitchen/bathroom pipes", icon: faFilter, category: 'Home Services' },
+  { id: 4, title: "Toilet Flush Repair", description: "Fix running or broken flush systems", icon: faToilet, category: 'Home Services' },
+  { id: 5, title: "Water Tank Cleaning", description: "Overhead tank sanitization", icon: faTint, category: 'Home Services' },
 
-  // Electrical & Appliances
-  { id: 6, title: "TV Repair", description: "LED/LCD screen or power issues", icon: faTv },
-  { id: 7, title: "Washing Machine Repair", description: "Motor, drum, or drainage fixes", icon: faSoap },
-  { id: 8, title: "Refrigerator Repair", description: "Cooling gas refill or compressor", icon: faSnowflake },
-  { id: 9, title: "AC Servicing", description: "Gas refill, cleaning, PCB repair", icon: faFan },
-  { id: 10, title: "Inverter/UPS Repair", description: "Battery or circuit issues", icon: faBolt },
+  // Appliance Repair
+  { id: 6, title: "TV Repair", description: "LED/LCD screen or power issues", icon: faTv, category: 'Appliance Repair' },
+  { id: 7, title: "Washing Machine Repair", description: "Motor, drum, or drainage fixes", icon: faSoap, category: 'Appliance Repair' },
+  { id: 8, title: "Refrigerator Repair", description: "Cooling gas refill or compressor", icon: faSnowflake, category: 'Appliance Repair' },
+  { id: 9, title: "AC Servicing", description: "Gas refill, cleaning, PCB repair", icon: faFan, category: 'Appliance Repair' },
+  { id: 10, title: "Inverter/UPS Repair", description: "Battery or circuit issues", icon: faBolt, category: 'Appliance Repair' },
 
-  // Carpentry
-  { id: 11, title: "Door/Window Repair", description: "Hinge alignment or replacement", icon: faDoorOpen },
-  { id: 12, title: "Furniture Repair", description: "Chair, table, or cupboard fixes", icon: faChair },
-  { id: 13, title: "Sofa Polish/Repair", description: "Reupholstering or leg repair", icon: faCouch },
+  // Home Services - Carpentry
+  { id: 11, title: "Door/Window Repair", description: "Hinge alignment or replacement", icon: faDoorOpen, category: 'Home Services' },
+  { id: 12, title: "Furniture Repair", description: "Chair, table, or cupboard fixes", icon: faChair, category: 'Home Services' },
+  { id: 13, title: "Sofa Polish/Repair", description: "Reupholstering or leg repair", icon: faCouch, category: 'Home Services' },
 
   // Cleaning
-  { id: 14, title: "Deep Cleaning", description: "Post-renovation or pest control", icon: faBroom },
-  { id: 15, title: "Sofa/Carpet Cleaning", description: "Stain removal or shampooing", icon: faSoap },
-  { id: 16, title: "Septic Tank Cleaning", description: "Emptying and maintenance", icon: faToilet },
+  { id: 14, title: "Deep Cleaning", description: "Post-renovation or pest control", icon: faBroom, category: 'Cleaning' },
+  { id: 15, title: "Sofa/Carpet Cleaning", description: "Stain removal or shampooing", icon: faSoap, category: 'Cleaning' },
+  { id: 16, title: "Septic Tank Cleaning", description: "Emptying and maintenance", icon: faToilet, category: 'Cleaning' },
 
-  // Electronics & IT
-  { id: 17, title: "Laptop Repair", description: "Hardware or software issues", icon: faLaptop },
-  { id: 18, title: "Wi-Fi Setup", description: "Router installation/troubleshooting", icon: faWifi },
-  { id: 19, title: "CCTV Installation", description: "Camera setup and configuration", icon: faVideo },
+  // Tech Services
+  { id: 17, title: "Laptop Repair", description: "Hardware or software issues", icon: faLaptop, category: 'Tech Services' },
+  { id: 18, title: "Wi-Fi Setup", description: "Router installation/troubleshooting", icon: faWifi, category: 'Tech Services' },
+  { id: 19, title: "CCTV Installation", description: "Camera setup and configuration", icon: faVideo, category: 'Tech Services' },
 
-  // Masonry
-  { id: 20, title: "Wall Painting", description: "Interior/exterior paint jobs", icon: faPaintRoller },
-  { id: 21, title: "Tile Fixing", description: "Floor/wall tile replacement", icon: faBorderStyle },
-  { id: 22, title: "Waterproofing", description: "Terrace or balcony sealing", icon: faHouseChimney },
+  // Home Services - Masonry
+  { id: 20, title: "Wall Painting", description: "Interior/exterior paint jobs", icon: faPaintRoller, category: 'Home Services' },
+  { id: 21, title: "Tile Fixing", description: "Floor/wall tile replacement", icon: faBorderStyle, category: 'Home Services' },
+  { id: 22, title: "Waterproofing", description: "Terrace or balcony sealing", icon: faHouseChimney, category: 'Home Services' },
 
   // Automotive
-  { id: 23, title: "Car Wash", description: "At-home detailing service", icon: faCar },
-  { id: 24, title: "Car AC Repair", description: "Cooling system servicing", icon: faCarSide },
-  { id: 25, title: "Bike Servicing", description: "Oil change or brake check", icon: faMotorcycle },
+  { id: 23, title: "Car Wash", description: "At-home detailing service", icon: faCar, category: 'Automotive' },
+  { id: 24, title: "Car AC Repair", description: "Cooling system servicing", icon: faCarSide, category: 'Automotive' },
+  { id: 25, title: "Bike Servicing", description: "Oil change or brake check", icon: faMotorcycle, category: 'Automotive' },
 
   // Appliance Installations
-  { id: 26, title: "Geyser Installation", description: "Electric or gas geyser setup", icon: faFire },
-  { id: 27, title: "Chimney Install", description: "Kitchen chimney fitting", icon: faWind },
-  { id: 28, title: "Smart Lock Setup", description: "Digital lock installation", icon: faLock },
+  { id: 26, title: "Geyser Installation", description: "Electric or gas geyser setup", icon: faFire, category: 'Appliance Repair' },
+  { id: 27, title: "Chimney Install", description: "Kitchen chimney fitting", icon: faWind, category: 'Appliance Repair' },
+  { id: 28, title: "Smart Lock Setup", description: "Digital lock installation", icon: faLock, category: 'Tech Services' },
 
-  // Miscellaneous
-  { id: 29, title: "Pest Control", description: "Cockroach/termite treatment", icon: faBug },
-  { id: 30, title: "Key Cutting", description: "Duplicate keys made", icon: faKey },
-  { id: 31, title: "Solar Panel Cleaning", description: "Dust removal for efficiency", icon: faSun },
-  { id: 32, title: "Grinder Repair", description: "Mixer/juicer servicing", icon: faBlender },
+  // Personal Help
+  { id: 29, title: "Pest Control", description: "Cockroach/termite treatment", icon: faBug, category: 'Personal Help' },
+  { id: 30, title: "Key Cutting", description: "Duplicate keys made", icon: faKey, category: 'Personal Help' },
+  { id: 31, title: "Solar Panel Cleaning", description: "Dust removal for efficiency", icon: faSun, category: 'Cleaning' },
+  { id: 32, title: "Grinder Repair", description: "Mixer/juicer servicing", icon: faBlender, category: 'Appliance Repair' },
 ];
 
 const FilterButton = ({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) => (
@@ -111,14 +113,24 @@ const Services = () => {
     setSelectedCategory(category);
   };
 
-  const handleLocationToggle = () => {
-    setUseCurrentLocation(!useCurrentLocation);
-  };
+  const fuse = new Fuse(services, {
+    keys: ['title','description'],
+    threshold:0.4,
+    distance:100,
+    minMatchCharLength:2
+  });
 
-  // Filter services based on the search query
+  const filtered = searchQuery.trim()
+  ? fuse.search(searchQuery).map(result => result.item)
+  : services;
+  
   const filteredServices = services.filter(service => {
-    return service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           service.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          service.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesCategory = selectedCategory === 'All Services' || service.category === selectedCategory;
+
+    return matchesSearch && matchesCategory;
   });
 
   return (
@@ -149,13 +161,7 @@ const Services = () => {
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"
               />
             </div>
-            <button
-              onClick={handleLocationToggle}
-              className="bg-[#ff9900] hover:bg-orange-500 text-white text-sm py-2 px-4 rounded-md flex items-center"
-            >
-              <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-xs" />
-              <span>{useCurrentLocation ? "Using Current Location" : "Use Current Location"}</span>
-            </button>
+            
           </div>
 
           <div className="flex flex-wrap gap-2 mb-6">
@@ -172,13 +178,10 @@ const Services = () => {
 
         {/* Service Grid */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredServices.map((service) => (
+          {filteredServices.map(service => (
             <ServiceCard
               key={service.id}
-              id={service.id}
-              title={service.title}
-              description={service.description}
-              icon={service.icon}
+              {...service}
             />
           ))}
         </section>
