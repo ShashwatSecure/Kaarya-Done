@@ -3,7 +3,6 @@ package com.example.Kaarya_Done.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.Set;
 
 @Entity
@@ -28,9 +27,7 @@ public class Freelancer {
     private String bio;
 
     private String city;
-
     private String state;
-
     private String pincode;
 
     @Column(name = "aadhaar_number", unique = true)
@@ -42,23 +39,39 @@ public class Freelancer {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "freelancer_services", joinColumns = @JoinColumn(name = "freelancer_id"))
-    private Set<String> services;
-
-    @Column(name = "service_desc")
-    private String serviceDesc;
+    /**
+     * Services offered by the freelancer.
+     * Many freelancers can offer many services.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "freelancer_services",
+            joinColumns = @JoinColumn(name = "freelancer_id"),
+            inverseJoinColumns = @JoinColumn(name = "service_id")
+    )
+    private Set<ProvidedService> servicesOffered;
 
     @Column(name = "experience")
-    private Integer experience;  // Changed to Integer
+    private Integer experience;
 
-    @Column(name = "hourly_rate")
-    private BigDecimal hourlyRate;  // Changed to BigDecimal
+    @Column(name = "services_success")
+    private Integer servicesSuccess;
 
-    @Column(name = "willingness_to_travel")
-    private Boolean willingnessToTravel;  // Changed to Boolean
+    @Column(name = "services_failed")
+    private Integer servicesFailed;
 
+    @Column(name = "services_cancelled")
+    private Integer servicesCancelled;
+
+    /**
+     * Becomes true after successfully serving 5 customers.
+     */
+    @Column(name = "is_verified")
     private boolean isVerified = false;
 
-    private boolean isActive = true;
+    /**
+     * Becomes false when the freelancer is busy or voluntarily unavailable.
+     */
+    @Column(name = "is_available")
+    private boolean isAvailable = true;
 }

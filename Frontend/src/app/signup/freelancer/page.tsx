@@ -15,11 +15,8 @@ interface FormData {
   panNumber: string;
   city: string;
   pincode: string;
-  services: string[];
-  serviceDesc: string;
+  services: string[]; // service IDs
   experience: number;
-  hourlyRate: number;
-  willingnessToTravel: boolean;
 }
 
 const FreelancerSignupPage = () => {
@@ -49,10 +46,7 @@ const FreelancerSignupPage = () => {
     city: '',
     pincode: '',
     services: [],
-    serviceDesc: '',
     experience: 0,
-    hourlyRate: 0,
-    willingnessToTravel: true,
   });
 
   useEffect(() => {
@@ -88,7 +82,7 @@ const FreelancerSignupPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: name === 'willingnessToTravel' ? value === 'true' : value });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,9 +174,7 @@ const FreelancerSignupPage = () => {
         aadhaar_number: formData.aadhaarNumber,
         pan_number: formData.panNumber,
         profile_image_url: imageUrl,
-        service_description: formData.serviceDesc,
-        hourly_rate: formData.hourlyRate,
-        willingness_to_travel: formData.willingnessToTravel,
+        services: formData.services.map((id) => parseInt(id)), // Send IDs as integers
       };
 
       const res = await fetch('http://localhost:8080/api/auth/signup/freelancer', {
@@ -191,7 +183,9 @@ const FreelancerSignupPage = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error((await res.json()).message || 'Signup failed');
+      if (!res.ok) {
+        throw new Error((await res.json()).message || 'Signup failed');
+      }
       alert('Freelancer created successfully!');
       setIsFormSubmitted(true);
       router.push('/login/freelancer');
@@ -229,7 +223,7 @@ const FreelancerSignupPage = () => {
                         ) : (
                           <div className="text-center">
                             <span className="text-2xl font-bold">+</span>
-                            <p className="text-xs"> Profile Picture</p>
+                            <p className="text-xs">Profile Picture</p>
                           </div>
                         )}
                       </div>
@@ -241,58 +235,95 @@ const FreelancerSignupPage = () => {
                 <input type="tel" name="mobile" placeholder="Mobile Number" value={formData.mobile} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" required />
                 {mobileStatus && <p className={`text-sm mt-1 ${mobileStatus.includes('used') ? 'text-red-500' : 'text-green-600'}`}>{mobileStatus}</p>}
 
-                {!otpVerified && mobileStatus === 'Mobile number is available.' && (
+                {!otpSent && !otpVerified && mobileStatus === 'Mobile number is available.' && (
+                  <button
+                    type="button"
+                    onClick={() => sendOtp(formData.mobile)}
+                    className="mt-2 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-md"
+                    disabled={cooldown > 0}
+                  >
+                    {cooldown > 0 ? `Send OTP (wait ${cooldown}s)` : 'Send OTP'}
+                  </button>
+                )}
+
+                {otpSent && !otpVerified && (
                   <>
-                    <button type="button" onClick={() => sendOtp(formData.mobile)} className="text-sm text-blue-600 underline disabled:text-gray-400" disabled={cooldown > 0}>
-                      {cooldown > 0 ? `Send OTP (wait ${cooldown}s)` : 'Send OTP'}
+                    <input
+                      type="text"
+                      name="otp"
+                      placeholder="Enter OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      className="w-full px-4 py-2 bg-white border border-gray-300 rounded text-black mt-2"
+                    />
+                    <button
+                      type="button"
+                      onClick={verifyOtp}
+                      className="py-2 px-4 bg-green-600 text-white rounded mt-2"
+                    >
+                      Verify OTP
                     </button>
-                    <input type="text" name="otp" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} className="w-full px-4 py-2 bg-white border border-gray-300 rounded text-black mt-2" />
-                    <button type="button" onClick={verifyOtp} className="py-2 px-4 bg-green-600 text-white rounded mt-2">Verify OTP</button>
                   </>
                 )}
 
                 {otpVerified && <p className="text-sm text-green-600">OTP verified successfully</p>}
                 {otpStatus && !otpVerified && <p className="text-sm text-red-600">{otpStatus}</p>}
 
-                <input type="text" name="state" placeholder="State" value={formData.state} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
-                <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
+
+                <select name="state" value={formData.state} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black" required>
+                  <option value="">Select State</option>
+                  <option value="West Bengal">West Bengal</option>
+                </select>
+                <select name="city" value={formData.city} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black" required>
+                  <option value="">Select City</option>
+                  <option value="Kolkata">Kolkata</option>
+                </select>
                 <input type="text" name="pincode" placeholder="Pincode" value={formData.pincode} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
-                <input type="text" name="aadhaarNumber" placeholder="Aadhaar Number" value={formData.aadhaarNumber} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
-                <input type="text" name="panNumber" placeholder="PAN Number" value={formData.panNumber} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" />
-                <textarea name="bio" rows={4} placeholder="Short bio..." value={formData.bio} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black" />
+                <input type="text" name="aadhaarNumber" placeholder="Aadhaar Number" value={formData.aadhaarNumber} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" required />
+                <input type="text" name="panNumber" placeholder="PAN Number" value={formData.panNumber} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" required />
+                <textarea name="bio" placeholder="Bio" value={formData.bio} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" required />
               </div>
             )}
 
+            {/* Step 2 - Services */}
             {step === 2 && (
               <div className="space-y-6">
-                <select multiple name="services" value={formData.services} onChange={(e) => setFormData({ ...formData, services: Array.from(e.target.selectedOptions).map((o) => o.value) })} className="w-full px-3 py-2 bg-gray-100 rounded text-black">
-                  {['Plumbing', 'Electrical', 'Carpentry', 'Painting', 'Cleaning', 'Other'].map((s) => <option key={s} value={s}>{s}</option>)}
+                <label className='font-medium'>Select your service category (you may choose more than one):<br /> <span className='text-gray-600 font-light'>Press 'ctrl' + click on the options to select multiple.</span></label>
+                <select multiple name="services" value={formData.services} onChange={(e) => setFormData({ ...formData, services: Array.from(e.target.selectedOptions).map((o) => o.value) })} className="w-full px-3 py-2 bg-gray-100 rounded text-black mt-2">
+
+                  <option value="1">Electrician</option>
+                  <option value="2">Plumber</option>
+                  <option value="3">Car Mechanic</option>
+                  <option value="4">Sweeper</option>
+                  <option value="5">Carpenter</option>
+                  <option value="6">AC Technician</option>
+                  <option value="7">Maid</option>
+                  <option value="8">Electronic Technician</option>
+                  <option value="9">Computer Technician</option>
+                  <option value="10">Mobile Technician</option>
                 </select>
-                <textarea name="serviceDesc" rows={2} placeholder="Describe your service..." value={formData.serviceDesc} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black" />
+                <label className='font-medium '>Experience (in years)</label>
                 <input type="number" name="experience" placeholder="Experience (years)" value={formData.experience} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black" />
-                <input type="number" name="hourlyRate" placeholder="Hourly Rate" value={formData.hourlyRate} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black" />
-                <label htmlFor="willingnessToTravel" className="block text-sm font-medium text-gray-700">Willing to travel?</label>
-                <select id="willingnessToTravel" name="willingnessToTravel" value={formData.willingnessToTravel.toString()} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black">
-                  <option value="true">Yes</option>
-                  <option value="false">No</option>
-                </select>
               </div>
             )}
 
+            {/* Step 3 - Reviews */}
             {step === 3 && (
               <div className="space-y-4">
-                <h2 className="text-xl font-bold">Review</h2>
-                <div className="text-sm space-y-2">
-                  {Object.entries(formData).map(([key, val]) => (
-                    <div key={key}><strong>{key.replace(/([A-Z])/g, ' $1')}</strong>: {Array.isArray(val) ? val.join(', ') : String(val)}</div>
-                  ))}
-                </div>
+                <p><strong>Full Name:</strong> {formData.fullName}</p>
+                <p><strong>Mobile:</strong> {formData.mobile}</p>
+                <p><strong>State:</strong> {formData.state}</p>
+                <p><strong>City:</strong> {formData.city}</p>
+                <p><strong>Services:</strong> {formData.services.join(', ')}</p>
+                <p><strong>Experience:</strong> {formData.experience} years</p>
               </div>
             )}
 
-            <div className="flex justify-between mt-6">
-              {step > 1 && <button type="button" onClick={handleBack} className="py-2 px-6 bg-gray-500 hover:bg-black text-white rounded">Back</button>}
-              {step < 3 ? <button type="button" onClick={handleNext} className="py-2 px-6 bg-[#ff9900] text-white rounded">Next</button> : <button type="submit" className="py-2 px-6 bg-[#ff9900] hover:bg-orange-500 text-white rounded">{isLoading ? 'Submitting...' : 'Submit'}</button>}  
+
+<div className="mt-6 flex justify-between">
+              {step > 1 && <button type="button" onClick={handleBack} className="px-4 py-2 bg-gray-500 text-white rounded">Back</button>}
+              {step < steps.length && <button type="button" onClick={handleNext} className="px-4 py-2 bg-[#ff9900] text-white rounded">Next</button>}
+              {step === steps.length && <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded" disabled={isLoading}>{isLoading ? 'Submitting...' : 'Submit'}</button>}
             </div>
           </form>
         </div>
