@@ -1,21 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
-import LoginModal from './LoginModal'; 
+import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [customerProfile, setCustomerProfile] = useState<{ name: string; photoUrl: string } | null>(null);
 
-  const openModal = () => {
-    setIsModalOpen(true);
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      setIsAuthenticated(true);
+      fetchCustomerProfile(token);
+    }
+  }, []);
+
+  const fetchCustomerProfile = async (token: string) => {
+    try {
+      const res = await fetch('http://localhost:8080/api/customer/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCustomerProfile({ name: data.name, photoUrl: data.photoUrl });
+      } else {
+        console.error("Failed to fetch profile");
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
   };
 
-  const closeModal = () => {
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    setIsAuthenticated(false);
+    setDropdownOpen(false);
+    setCustomerProfile(null);
+  };
+
+  const handleLoginSuccess = () => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      setIsAuthenticated(true);
+      fetchCustomerProfile(token);
+    }
     setIsModalOpen(false);
   };
 
@@ -40,30 +80,62 @@ export default function Navbar() {
             <Link href="/contactus" className="text-gray-800 hover:text-[#ff9900]">Contact Us</Link>
           </nav>
 
-          {/* Action Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Right Side Actions */}
+          <div className="flex items-center space-x-4">
+            {!isAuthenticated ? (
+              <>
+                <button
+                  onClick={openModal}
+                  className="text-gray-800 hover:text-[#ff9900]"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setIsRegisterModalOpen(true)}
+                  className="bg-[#ff9900] text-white px-4 py-2 rounded font-medium hover:bg-orange-600"
+                >
+                  SignUp
+                </button>
+              </>
+            ) : (
+              <div className="relative">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex flex-col items-center hover:text-[#ff9900] focus:outline-none"
+                >
+                  {customerProfile?.photoUrl && (
+                    <img
+                      src={customerProfile.photoUrl}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full object-cover mb-1"
+                    />
+                  )}
+                  <span className="text-sm">{customerProfile?.name}</span>
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 bg-white shadow-md border rounded-lg py-2 z-50">
+                    <button
+                      onClick={handleLogout}
+                      className="block px-4 py-2 text-red-600 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+
+            )}
+
+            {/* Mobile Toggle */}
             <button
-              onClick={openModal}
-              className="text-gray-800 hover:text-[#ff9900]"
+              className="lg:hidden text-gray-800"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle navigation"
             >
-              Login
-            </button>
-            <button
-              onClick={() => setIsRegisterModalOpen(true)}
-              className="bg-[#ff9900] text-white px-4 py-2 rounded font-medium hover:bg-orange-600"
-            >
-              SignUp
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
-
-          {/* Mobile Toggle */}
-          <button
-            className="lg:hidden text-gray-800"
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Toggle navigation"
-          >
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
       </header>
 
@@ -75,24 +147,40 @@ export default function Navbar() {
           <Link href="/freelancers" className="block text-gray-800 hover:text-[#ff9900]">Freelancers</Link>
           <Link href="/how-it-works" className="block text-gray-800 hover:text-[#ff9900]">How It Works</Link>
           <Link href="/contactus" className="block text-gray-800 hover:text-[#ff9900]">Contact Us</Link>
-          <button
-            onClick={openModal}
-            className="text-gray-800 hover:text-[#ff9900]"
-          >
-            Login
-          </button>
-          <button
-            onClick={() => setIsRegisterModalOpen(true)}
-            className="block bg-[#ff9900] text-white px-4 py-2 rounded font-medium hover:bg-orange-600 w-full text-center"
-          >
-            SignUp
-          </button>
+          {!isAuthenticated ? (
+            <>
+              <button
+                onClick={openModal}
+                className="text-gray-800 hover:text-[#ff9900]"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => setIsRegisterModalOpen(true)}
+                className="block bg-[#ff9900] text-white px-4 py-2 rounded font-medium hover:bg-orange-600 w-full text-center"
+              >
+                SignUp
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center space-y-2">
+              
+            </div>
+
+          )}
         </div>
       )}
 
       {/* Modals */}
-      <LoginModal isOpen={isModalOpen} closeModal={closeModal} />
-      <RegisterModal isOpen={isRegisterModalOpen} onClose={() => setIsRegisterModalOpen(false)} />
+      <LoginModal
+        isOpen={isModalOpen}
+        closeModal={closeModal}
+        onLoginSuccess={handleLoginSuccess}
+      />
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+      />
     </>
   );
 }

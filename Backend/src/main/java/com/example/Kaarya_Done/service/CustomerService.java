@@ -6,6 +6,8 @@ import com.example.Kaarya_Done.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class CustomerService {
 
@@ -26,4 +28,10 @@ public class CustomerService {
     public boolean mobileExists(String mobile) {
         return customerRepository.existsByMobile(mobile);
     }
+
+
+    public Customer findByMobile(String mobile) {
+        return customerRepository.findByMobile(mobile).orElse(null);
+    }
+
 }

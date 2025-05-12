@@ -25,7 +25,7 @@ const CustomerNavbar: React.FC<CustomerNavbarProps> = ({ name, profileImage }) =
   }, []);
 
   const handleLogout = () => {
-    // TODO: Replace with actual auth logout logic
+    localStorage.removeItem("authToken"); // Clear the auth token on logout
     console.log("Logging out...");
   };
 

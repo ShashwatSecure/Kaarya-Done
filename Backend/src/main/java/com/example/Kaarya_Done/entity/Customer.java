@@ -36,8 +36,12 @@ public class Customer {
     @Column(length = 10)
     private String pincode;
 
-    @Column(name = "photo_url", length = 255)
+    @Column(name = "photo_url", length = 255, columnDefinition = "VARCHAR(255) DEFAULT '/images/customer/default-avatar.webp'")
     private String photoUrl;
+
+
+    @Column(name = "role", nullable = false, length = 50, columnDefinition = "varchar(50) default 'CUSTOMER'", updatable = false)
+    private final String role = "CUSTOMER";
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

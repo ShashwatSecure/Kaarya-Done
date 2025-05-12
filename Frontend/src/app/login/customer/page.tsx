@@ -1,10 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 const CustomerLoginForm: React.FC = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirectTo') || '/';
+
   const [formData, setFormData] = useState({ mobile: '' });
   const [otp, setOtp] = useState('');
   const [mobileExists, setMobileExists] = useState(false);
@@ -75,6 +80,7 @@ const CustomerLoginForm: React.FC = () => {
       const res = await fetch(`http://localhost:8080/api/sms/send-otp?mobile=${formData.mobile}`, {
         method: 'POST',
       });
+      
       const data = await res.json();
       if (data.success) {
         setOtpSent(true);
@@ -101,7 +107,27 @@ const CustomerLoginForm: React.FC = () => {
       if (data.success) {
         setOtpVerified(true);
         setStatusMessage('OTP verified! Logging in...');
-        console.log('Customer logged in successfully:', formData.mobile);
+        
+        // Send mobile and role to backend for JWT token generation
+        const loginRes = await fetch('http://localhost:8080/api/auth/login/customer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobile: formData.mobile, role: 'customer' }), // Send role as 'customer'
+        });
+
+        const loginData = await loginRes.json();
+        if (loginRes.ok) {
+          // Save JWT token (you can use cookies or localStorage here)
+          localStorage.setItem('authToken', loginData.token); // assuming the response has a 'token' key
+
+          console.log(localStorage.getItem('authToken'));
+
+          setTimeout(() => {
+            router.replace(redirectTo !== '/login/customer' ? redirectTo : '/');
+          }, 1000);
+        } else {
+          setError(loginData.message || 'Login failed.');
+        }
       } else {
         setError(data.message || 'Invalid OTP.');
       }
@@ -110,6 +136,7 @@ const CustomerLoginForm: React.FC = () => {
       setError('Error verifying OTP.');
     }
   };
+  
 
   const handleOtpKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
