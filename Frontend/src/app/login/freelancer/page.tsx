@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useRouter } from 'next/navigation';
 
 const FreelancerLoginForm: React.FC = () => {
   const [formData, setFormData] = useState({ mobile: '' });
@@ -17,6 +18,7 @@ const FreelancerLoginForm: React.FC = () => {
   const [resendTimer, setResendTimer] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
 
+  const router = useRouter();
   const clearMessages = () => {
     setTimeout(() => {
       setError('');
@@ -106,8 +108,27 @@ const FreelancerLoginForm: React.FC = () => {
         setStatusMessage('OTP verified! Logging in...');
         setError('');
         console.log('Freelancer logged in successfully:', formData.mobile);
+        
+        // Generate and store token upon successful OTP verification
+        const tokenResponse = await fetch('http://localhost:8080/api/auth/login/freelancer', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ mobile: formData.mobile, role: 'freelancer' }),
+        });
+
+        const tokenData = await tokenResponse.json();
+        if (tokenData.freelancerId) {
+          
+          localStorage.setItem('freelancerToken', tokenData.token);
+          setStatusMessage('Successfully logged in as Freelancer.');
+          router.push("/freelancer/dashboard");
+        } else {
+          setError(tokenData.message || 'Failed to log in.');
+        }
+        
         clearMessages();
-        // TODO: Redirect or token handling
       } else {
         setError(data.message || 'Invalid OTP.');
         clearMessages();

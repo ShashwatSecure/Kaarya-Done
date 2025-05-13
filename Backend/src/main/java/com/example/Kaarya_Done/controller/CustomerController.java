@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000") // Adjust as needed
+@RequestMapping("/api/customer")
+@CrossOrigin(origins = "http://localhost:3000")
 public class CustomerController {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
@@ -31,48 +31,7 @@ public class CustomerController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
-    @PostMapping("/auth/signup/customer")
-    public ResponseEntity<?> signup(@Valid @RequestBody SignupDtoCustomer signupDtoCustomer) {
-        Customer customer = customerService.createCustomer(signupDtoCustomer);
-        return ResponseEntity.ok(Map.of(
-                "id", customer.getId(),
-                "name", customer.getFullName(),
-                "mobile", customer.getMobile()
-        ));
-    }
-
-    @GetMapping("/auth/check-mobile/customer")
-    public ResponseEntity<?> checkMobileExists(@RequestParam String mobile) {
-        boolean exists = customerService.mobileExists(mobile);
-        Map<String, Boolean> response = new HashMap<>();
-        response.put("exists", exists);
-        logger.info("Mobile exists response: {}", response);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/auth/login/customer")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginDtoCustomer loginDto) {
-        String mobile = loginDto.getMobile();
-        String role = loginDto.getRole();
-
-        Customer customer = customerService.findByMobile(mobile);
-
-        if (customer == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Invalid mobile number or customer not found."));
-        }
-
-        String token = jwtTokenProvider.generateToken(mobile, role);
-
-        return ResponseEntity.ok(Map.of(
-                "token", token,
-                "customerId", customer.getId(),
-                "name", customer.getFullName(),
-                "mobile", customer.getMobile(),
-                "role", role
-        ));
-    }
-
-    @GetMapping("/customer/profile")
+    @GetMapping("/profile")
     @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<?> getCustomerProfile(Authentication authentication) {
         String mobile = authentication.getName();

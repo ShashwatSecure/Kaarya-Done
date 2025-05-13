@@ -23,6 +23,15 @@ public class JwtFilter extends OncePerRequestFilter {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
+    // ✅ This tells Spring to skip filtering for public paths
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth/") ||
+                path.startsWith("/api/sms/") ||
+                path.startsWith("/api/upload/");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -52,8 +61,6 @@ public class JwtFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 System.out.println("JWT Filter error: " + e.getMessage());
             }
-        } else {
-            System.out.println("No Authorization header or header does not start with Bearer");
         }
 
         chain.doFilter(request, response);

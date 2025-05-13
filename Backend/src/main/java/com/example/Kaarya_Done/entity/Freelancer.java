@@ -54,6 +54,9 @@ public class Freelancer {
     @Column(name = "experience")
     private Integer experience;
 
+    @Column(name = "role", nullable = false, length = 50, columnDefinition = "varchar(50) default 'FREELANCER'", updatable = false)
+    private final String role = "FREELANCER";
+
     @Column(name = "services_success")
     private Integer servicesSuccess;
 

@@ -39,7 +39,7 @@ public class SmsController {
         logger.info("Sending OTP to {}: {}", formattedNumber, otp);
 
         String response = smsService.sendOtpSms(formattedNumber, otp);
-
+        System.out.println(response);
         Map<String, Object> responseMap = new HashMap<>();
         if (response.contains("Failed")) {
             responseMap.put("success", false);

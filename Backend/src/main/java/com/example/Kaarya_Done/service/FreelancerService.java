@@ -1,6 +1,7 @@
 package com.example.Kaarya_Done.service;
 
 import com.example.Kaarya_Done.dto.SignupDtoFreelancer;
+import com.example.Kaarya_Done.entity.Customer;
 import com.example.Kaarya_Done.entity.Freelancer;
 import com.example.Kaarya_Done.entity.ServiceCategory;
 import com.example.Kaarya_Done.repository.FreelancerRepository;
@@ -57,5 +58,9 @@ public class FreelancerService {
 
     public boolean mobileExists(String mobile) {
         return freelancerRepository.existsByMobile(mobile);
+    }
+
+    public Freelancer findByMobile(String mobile) {
+        return freelancerRepository.findByMobile(mobile).orElse(null);
     }
 }

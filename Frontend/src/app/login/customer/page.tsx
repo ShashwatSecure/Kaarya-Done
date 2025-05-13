@@ -9,7 +9,6 @@ const CustomerLoginForm: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '/';
-
   const [formData, setFormData] = useState({ mobile: '' });
   const [otp, setOtp] = useState('');
   const [mobileExists, setMobileExists] = useState(false);
@@ -20,12 +19,15 @@ const CustomerLoginForm: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState('');
   const [resendTimer, setResendTimer] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
+  const [loading, setLoading] = useState(false); // Loading state
+  const [isMounted, setIsMounted] = useState(true); // For cleanup
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === 'mobile' && !/^\d{0,10}$/.test(value)) return;
 
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
     setOtpSent(false);
     setOtpVerified(false);
     setError('');
@@ -37,7 +39,15 @@ const CustomerLoginForm: React.FC = () => {
       if (formData.mobile.length === 10) {
         setCheckingMobile(true);
         try {
-          const res = await fetch(`http://localhost:8080/api/auth/check-mobile/customer?mobile=${formData.mobile}`);
+          const res = await fetch(
+            `${BACKEND_URL}/api/auth/check-mobile/customer?mobile=${formData.mobile}`,
+            {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json',
+              },
+            }
+          );
           if (!res.ok) throw new Error(`Status ${res.status}`);
           const data = await res.json();
           setMobileExists(data.exists);
@@ -51,23 +61,26 @@ const CustomerLoginForm: React.FC = () => {
       }
     };
     checkMobile();
+    return () => setIsMounted(false); // Cleanup on unmount
   }, [formData.mobile]);
 
   useEffect(() => {
     if (statusMessage || error) {
       const timeout = setTimeout(() => {
-        setStatusMessage('');
-        setError('');
+        if (isMounted) {
+          setStatusMessage('');
+          setError('');
+        }
       }, 3000);
       return () => clearTimeout(timeout);
     }
-  }, [statusMessage, error]);
+  }, [statusMessage, error, isMounted]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (timerActive && resendTimer > 0) {
       timer = setInterval(() => {
-        setResendTimer(prev => prev - 1);
+        setResendTimer((prev) => prev - 1);
       }, 1000);
     } else if (resendTimer === 0) {
       setTimerActive(false);
@@ -76,13 +89,18 @@ const CustomerLoginForm: React.FC = () => {
   }, [timerActive, resendTimer]);
 
   const handleSendOtp = async () => {
+    setLoading(true); // Start loading
     try {
-      const res = await fetch(`http://localhost:8080/api/sms/send-otp?mobile=${formData.mobile}`, {
+      const res = await fetch(`${BACKEND_URL}/api/sms/send-otp?mobile=${formData.mobile}`, {
         method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+        },
       });
-      
+
       const data = await res.json();
-      if (data.success) {
+
+      if (res.ok && data.success) {
         setOtpSent(true);
         setStatusMessage('OTP sent successfully.');
         setResendTimer(30);
@@ -93,37 +111,44 @@ const CustomerLoginForm: React.FC = () => {
     } catch (err) {
       console.error('Send OTP failed:', err);
       setError('Error sending OTP.');
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
   const handleVerifyOtp = async () => {
+    setLoading(true); // Start loading
     try {
-      const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
+      const res = await fetch(`${BACKEND_URL}/api/sms/verify-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: JSON.stringify({ mobile: formData.mobile, otp }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         setOtpVerified(true);
         setStatusMessage('OTP verified! Logging in...');
-        
-        // Send mobile and role to backend for JWT token generation
-        const loginRes = await fetch('http://localhost:8080/api/auth/login/customer', {
+
+        const loginRes = await fetch(`${BACKEND_URL}/api/auth/login/customer`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mobile: formData.mobile, role: 'customer' }), // Send role as 'customer'
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({ mobile: formData.mobile, role: 'customer' }),
         });
 
         const loginData = await loginRes.json();
         if (loginRes.ok) {
-          // Save JWT token (you can use cookies or localStorage here)
-          localStorage.setItem('authToken', loginData.token); // assuming the response has a 'token' key
-
-          console.log(localStorage.getItem('authToken'));
+          localStorage.setItem('authToken', loginData.token);
 
           setTimeout(() => {
-            router.replace(redirectTo !== '/login/customer' ? redirectTo : '/');
+            const safeRedirect =
+              redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/';
+            router.replace(safeRedirect !== '/login/customer' ? safeRedirect : '/');
           }, 1000);
         } else {
           setError(loginData.message || 'Login failed.');
@@ -134,9 +159,10 @@ const CustomerLoginForm: React.FC = () => {
     } catch (err) {
       console.error('OTP verification failed:', err);
       setError('Error verifying OTP.');
+    } finally {
+      setLoading(false); // End loading
     }
   };
-  
 
   const handleOtpKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -162,6 +188,7 @@ const CustomerLoginForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full bg-gray-100 border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#ff9900] text-black"
                 required
+                aria-label="Mobile number"
               />
               {checkingMobile && <p className="text-sm text-gray-600 mt-1">Checking mobile number...</p>}
               {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
@@ -172,9 +199,10 @@ const CustomerLoginForm: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSendOtp}
+                disabled={loading} // Disable button during loading
                 className="bg-[#ff9900] text-white w-full py-3 rounded font-bold hover:bg-orange-500 mb-4 transition"
               >
-                Send OTP
+                {loading ? 'Sending OTP...' : 'Send OTP'}
               </button>
             )}
 
@@ -186,20 +214,24 @@ const CustomerLoginForm: React.FC = () => {
                     type="text"
                     name="otp"
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
+                    onChange={(e) => {
+                      if (/^\d{0,6}$/.test(e.target.value)) setOtp(e.target.value);
+                    }}
                     onKeyDown={handleOtpKeyPress}
                     className="w-full bg-gray-100 border border-gray-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#ff9900] text-black"
                     maxLength={6}
                     required
+                    aria-label="OTP"
                   />
                 </div>
 
                 <button
                   type="button"
                   onClick={handleVerifyOtp}
+                  disabled={loading} // Disable button during loading
                   className="bg-[#ff9900] text-white w-full py-3 rounded font-bold hover:bg-orange-500 mb-2 transition"
                 >
-                  Verify OTP
+                  {loading ? 'Verifying OTP...' : 'Verify OTP'}
                 </button>
 
                 {timerActive ? (
