@@ -77,4 +77,17 @@ public class Freelancer {
      */
     @Column(name = "is_available")
     private boolean isAvailable = true;
+
+    // New fields to match the frontend stats:
+    @Column(name = "earnings")
+    private Double earnings; // Freelancer's earnings
+
+    @Column(name = "wallet_balance")
+    private Double walletBalance; // Freelancer's wallet balance
+
+    @Column(name = "rating")
+    private Double rating; // Freelancer's rating
+
+    @Column(name = "completed_jobs")
+    private Integer completedJobs; // Number of completed jobs
 }

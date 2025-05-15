@@ -5,7 +5,7 @@ import {
   faTint, faWrench, faFilter, faToilet, faTv, faSoap, faSnowflake, faFan, faBolt,
   faDoorOpen, faChair, faCouch, faBroom, faLaptop, faWifi, faVideo, faPaintRoller,
   faBorderStyle, faHouseChimney, faCar, faCarSide, faMotorcycle, faFire, faWind,
-  faLock, faBug, faKey, faSun, faBlender, faSearch, faMapMarkerAlt
+  faLock, faBug, faKey, faSun, faBlender,faMapMarkerAlt
 } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -156,10 +156,7 @@ const Services = () => {
                 onChange={handleSearchChange}
                 className="w-full border border-gray-300 rounded-md py-2 px-3 pl-10 text-sm text-black placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#ff9900]"
               />
-              <FontAwesomeIcon
-                icon={faSearch}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"
-              />
+              
             </div>
             
           </div>

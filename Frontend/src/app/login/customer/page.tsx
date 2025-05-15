@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import debounce from 'lodash/debounce';
 
 const CustomerLoginForm: React.FC = () => {
   const router = useRouter();
@@ -34,35 +35,69 @@ const CustomerLoginForm: React.FC = () => {
     setStatusMessage('');
   };
 
+  // useEffect(() => {
+  //   const checkMobile = async () => {
+  //     if (formData.mobile.length === 10) {
+  //       setCheckingMobile(true);
+  //       try {
+  //         const res = await fetch(
+  //           `${BACKEND_URL}/api/auth/check-mobile/customer?mobile=${formData.mobile}`,
+  //           {
+  //             method: 'GET',
+  //             headers: {
+  //               'Accept': 'application/json',
+  //             },
+  //           }
+  //         );
+  //         if (!res.ok) throw new Error(`Status ${res.status}`);
+  //         const data = await res.json();
+  //         setMobileExists(data.exists);
+  //         if (!data.exists) setError('Mobile number not registered.');
+  //       } catch (err) {
+  //         console.error('Error checking mobile:', err);
+  //         setError('Something went wrong while checking the number.');
+  //       } finally {
+  //         setCheckingMobile(false);
+  //       }
+  //     }
+  //   };
+  //   checkMobile();
+  //   return () => setIsMounted(false); // Cleanup on unmount
+  // }, [formData.mobile]);
+
   useEffect(() => {
-    const checkMobile = async () => {
-      if (formData.mobile.length === 10) {
-        setCheckingMobile(true);
-        try {
-          const res = await fetch(
-            `${BACKEND_URL}/api/auth/check-mobile/customer?mobile=${formData.mobile}`,
-            {
-              method: 'GET',
-              headers: {
-                'Accept': 'application/json',
-              },
-            }
-          );
-          if (!res.ok) throw new Error(`Status ${res.status}`);
-          const data = await res.json();
-          setMobileExists(data.exists);
-          if (!data.exists) setError('Mobile number not registered.');
-        } catch (err) {
-          console.error('Error checking mobile:', err);
-          setError('Something went wrong while checking the number.');
-        } finally {
-          setCheckingMobile(false);
-        }
+  const debouncedCheckMobile = debounce(async (mobile: string) => {
+    if (mobile.length === 10) {
+      setCheckingMobile(true);
+      try {
+        const res = await fetch(
+          `${BACKEND_URL}/api/auth/check-mobile/customer?mobile=${mobile}`,
+          {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+            },
+          }
+        );
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        const data = await res.json();
+        setMobileExists(data.exists);
+        if (!data.exists) setError('Mobile number not registered.');
+      } catch (err) {
+        console.error('Error checking mobile:', err);
+        setError('Something went wrong while checking the number.');
+      } finally {
+        setCheckingMobile(false);
       }
-    };
-    checkMobile();
-    return () => setIsMounted(false); // Cleanup on unmount
-  }, [formData.mobile]);
+    }
+  }, 800); // waits for 800ms after last keystroke
+
+  debouncedCheckMobile(formData.mobile);
+
+  return () => {
+    debouncedCheckMobile.cancel(); // clean up
+  };
+}, [formData.mobile]);
 
   useEffect(() => {
     if (statusMessage || error) {

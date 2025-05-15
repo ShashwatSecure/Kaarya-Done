@@ -1,7 +1,6 @@
 package com.example.Kaarya_Done.service;
 
 import com.example.Kaarya_Done.dto.SignupDtoFreelancer;
-import com.example.Kaarya_Done.entity.Customer;
 import com.example.Kaarya_Done.entity.Freelancer;
 import com.example.Kaarya_Done.entity.ServiceCategory;
 import com.example.Kaarya_Done.repository.FreelancerRepository;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class FreelancerService {

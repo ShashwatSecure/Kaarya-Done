@@ -30,8 +30,14 @@ public class FreelancerController {
 
         return ResponseEntity.ok(Map.of(
                 "name", freelancer.getFullName(),
+                "profileImage",freelancer.getProfileImageUrl(),
+                "role", freelancer.getRole(),
+                "earnings", freelancer.getEarnings(),
+                "wallet", freelancer.getWalletBalance(),
+                "rating", freelancer.getRating(),
+                "completedJobs", freelancer.getCompletedJobs(),
                 "photoUrl", freelancer.getProfileImageUrl()
         ));
-
     }
+
 }

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { useRouter } from 'next/navigation';
 
 const FreelancerLoginForm: React.FC = () => {
   const [formData, setFormData] = useState({ mobile: '' });
@@ -14,19 +14,20 @@ const FreelancerLoginForm: React.FC = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [error, setError] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
-
   const [resendTimer, setResendTimer] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
 
   const router = useRouter();
-  const clearMessages = () => {
-    setTimeout(() => {
+
+  const clearMessages = useCallback(() => {
+    const timer = setTimeout(() => {
       setError('');
       setStatusMessage('');
     }, 3000);
-  };
+    return () => clearTimeout(timer);
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === 'mobile' && !/^\d{0,10}$/.test(value)) return;
 
@@ -35,7 +36,7 @@ const FreelancerLoginForm: React.FC = () => {
     setOtpVerified(false);
     setError('');
     setStatusMessage('');
-  };
+  }, []);
 
   useEffect(() => {
     const checkMobile = async () => {
@@ -55,7 +56,9 @@ const FreelancerLoginForm: React.FC = () => {
         }
       }
     };
-    checkMobile();
+    
+    const timer = setTimeout(checkMobile, 500);
+    return () => clearTimeout(timer);
   }, [formData.mobile]);
 
   useEffect(() => {
@@ -70,7 +73,7 @@ const FreelancerLoginForm: React.FC = () => {
     return () => clearInterval(timer);
   }, [timerActive, resendTimer]);
 
-  const handleSendOtp = async () => {
+  const handleSendOtp = useCallback(async () => {
     try {
       const res = await fetch(`http://localhost:8080/api/sms/send-otp?mobile=${formData.mobile}`, {
         method: 'POST',
@@ -79,7 +82,7 @@ const FreelancerLoginForm: React.FC = () => {
       if (data.success) {
         setOtpSent(true);
         setStatusMessage('OTP sent successfully.');
-        setResendTimer(30); // Start 30 second cooldown
+        setResendTimer(30);
         setTimerActive(true);
         clearMessages();
       } else {
@@ -91,9 +94,9 @@ const FreelancerLoginForm: React.FC = () => {
       setError('Error sending OTP.');
       clearMessages();
     }
-  };
+  }, [formData.mobile, clearMessages]);
 
-  const handleVerifyOtp = async () => {
+  const handleVerifyOtp = useCallback(async () => {
     try {
       const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
         method: 'POST',
@@ -107,9 +110,7 @@ const FreelancerLoginForm: React.FC = () => {
         setOtpVerified(true);
         setStatusMessage('OTP verified! Logging in...');
         setError('');
-        console.log('Freelancer logged in successfully:', formData.mobile);
         
-        // Generate and store token upon successful OTP verification
         const tokenResponse = await fetch('http://localhost:8080/api/auth/login/freelancer', {
           method: 'POST',
           headers: {
@@ -119,32 +120,29 @@ const FreelancerLoginForm: React.FC = () => {
         });
 
         const tokenData = await tokenResponse.json();
-        if (tokenData.freelancerId) {
-          
-          localStorage.setItem('freelancerToken', tokenData.token);
+        if (tokenData.token) {
+          localStorage.setItem('authToken', tokenData.token);
           setStatusMessage('Successfully logged in as Freelancer.');
           router.push("/freelancer/dashboard");
         } else {
           setError(tokenData.message || 'Failed to log in.');
         }
-        
-        clearMessages();
       } else {
         setError(data.message || 'Invalid OTP.');
-        clearMessages();
       }
+      clearMessages();
     } catch (err) {
       console.error('OTP verification failed:', err);
       setError('Error verifying OTP.');
       clearMessages();
     }
-  };
+  }, [formData.mobile, otp, router, clearMessages]);
 
-  const handleOtpKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleOtpKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleVerifyOtp();
     }
-  };
+  }, [handleVerifyOtp]);
 
   return (
     <>
