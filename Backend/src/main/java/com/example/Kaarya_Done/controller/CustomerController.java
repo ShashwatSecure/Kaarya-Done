@@ -43,7 +43,7 @@ public class CustomerController {
 
         return ResponseEntity.ok(Map.of(
                 "name", customer.getFullName(),
-                "photoUrl", customer.getPhotoUrl()
+                "profileImageUrl", customer.getProfileImageUrl()
         ));
 
     }

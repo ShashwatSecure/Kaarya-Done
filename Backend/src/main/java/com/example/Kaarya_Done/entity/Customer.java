@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "customers", uniqueConstraints = @UniqueConstraint(columnNames = "mobile_number"))
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "customers", uniqueConstraints = @UniqueConstraint(columnNames = "mobile_number"))
 public class Customer {
 
     @Id
@@ -21,27 +22,25 @@ public class Customer {
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(name = "mobile_number", nullable = false, length = 15)
+    @Column(name = "mobile_number", nullable = false, length = 15, unique = true)
     private String mobile;
 
     @Column(length = 500)
     private String address;
 
-    @Column(length = 100)
-    private String state;
+    // Link to Location entity for standardized location data
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
 
-    @Column(length = 100)
-    private String city;
+    @Column(name = "photo_url", length = 255)
+    @Builder.Default
+    private String profileImageUrl = "/images/customer/default-avatar.webp";
 
-    @Column(length = 10)
-    private String pincode;
-
-    @Column(name = "photo_url", length = 255, columnDefinition = "VARCHAR(255) DEFAULT '/images/customer/default-avatar.webp'")
-    private String photoUrl;
-
-
-    @Column(name = "role", nullable = false, length = 50, columnDefinition = "varchar(50) default 'CUSTOMER'", updatable = false)
-    private final String role = "CUSTOMER";
+    @Column(name = "role", nullable = false, length = 50)
+    @Setter(AccessLevel.NONE)
+    @Builder.Default
+    private String role = "CUSTOMER";
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

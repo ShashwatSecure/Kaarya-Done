@@ -12,6 +12,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(of = "id")
+@ToString(of = {"id", "fullName", "mobile", "location"})
 public class Freelancer {
 
     @Id
@@ -24,11 +26,13 @@ public class Freelancer {
     @Column(nullable = false, unique = true)
     private String mobile;
 
+    @Column(columnDefinition = "TEXT")
     private String bio;
 
-    private String city;
-    private String state;
-    private String pincode;
+    // Reference Location entity instead of strings
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "location_id", nullable = false)
+    private Location location;
 
     @Column(name = "aadhaar_number", unique = true)
     private String aadhaarNumber;
@@ -36,7 +40,7 @@ public class Freelancer {
     @Column(name = "pan_number", unique = true)
     private String panNumber;
 
-    @Column(name = "profile_image_url")
+    @Column(name = "profile_image_url", columnDefinition = "VARCHAR(255) DEFAULT '/images/customer/default-avatar.webp'")
     private String profileImageUrl;
 
     /**
@@ -57,37 +61,31 @@ public class Freelancer {
     @Column(name = "role", nullable = false, length = 50, columnDefinition = "varchar(50) default 'FREELANCER'", updatable = false)
     private final String role = "FREELANCER";
 
-    @Column(name = "services_success")
-    private Integer servicesSuccess;
+    @Column(name = "services_success", columnDefinition = "INT DEFAULT 0")
+    private Integer servicesSuccess = 0;
 
-    @Column(name = "services_failed")
-    private Integer servicesFailed;
+    @Column(name = "services_failed", columnDefinition = "INT DEFAULT 0")
+    private Integer servicesFailed = 0;
 
-    @Column(name = "services_cancelled")
-    private Integer servicesCancelled;
+    @Column(name = "services_cancelled", columnDefinition = "INT DEFAULT 0")
+    private Integer servicesCancelled = 0;
 
-    /**
-     * Becomes true after successfully serving 5 customers.
-     */
-    @Column(name = "is_verified")
+    @Column(name = "is_verified", columnDefinition = "BOOLEAN DEFAULT false")
     private boolean isVerified = false;
 
-    /**
-     * Becomes false when the freelancer is busy or voluntarily unavailable.
-     */
-    @Column(name = "is_available")
+    @Column(name = "is_available", columnDefinition = "BOOLEAN DEFAULT true")
     private boolean isAvailable = true;
 
-    // New fields to match the frontend stats:
-    @Column(name = "earnings")
-    private Double earnings; // Freelancer's earnings
+    @Column(name = "earnings", columnDefinition = "INT DEFAULT 0")
+    private Integer earnings = 0;
 
-    @Column(name = "wallet_balance")
-    private Double walletBalance; // Freelancer's wallet balance
+    @Column(name = "wallet_balance", columnDefinition = "INT DEFAULT 0")
+    private Integer walletBalance = 0;
 
-    @Column(name = "rating")
-    private Double rating; // Freelancer's rating
+    // Use Double for fractional ratings, with default 0.0
+    @Column(name = "rating", columnDefinition = "DECIMAL(2,1) DEFAULT 0")
+    private Double rating = 0.0;
 
-    @Column(name = "completed_jobs")
-    private Integer completedJobs; // Number of completed jobs
+    @Column(name = "completed_jobs", columnDefinition = "INT DEFAULT 0")
+    private Integer completedJobs = 0;
 }

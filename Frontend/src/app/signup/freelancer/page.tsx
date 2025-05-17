@@ -15,9 +15,21 @@ interface FormData {
   panNumber: string;
   city: string;
   pincode: string;
-  serviceCategoryIds: string[]; // service IDs
+  serviceCategoryIds: string[];
   experience: number;
 }
+const serviceCategories = [
+  { id: 1, category_title: "Plumbing" },
+  { id: 2, category_title: "Electrical Repair" },
+  { id: 3, category_title: "Home Cleaning" },
+  { id: 4, category_title: "Appliance Repair" },
+  { id: 5, category_title: "Painting" },
+  { id: 6, category_title: "Carpentry" },
+  { id: 7, category_title: "AC Services" },
+  { id: 8, category_title: "Pest Control" },
+  { id: 9, category_title: "Packers and Movers" },
+  { id: 10, category_title: "Water Tank Cleaning" },
+];
 
 const FreelancerSignupPage = () => {
   const router = useRouter();
@@ -52,7 +64,7 @@ const FreelancerSignupPage = () => {
   useEffect(() => {
     const checkMobileNumber = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
+        const res = await fetch(`http://192.168.1.4:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
         if (!res.ok) throw new Error('Request failed');
         const text = await res.text();
         if (!text) throw new Error('Empty response');
@@ -99,7 +111,7 @@ const FreelancerSignupPage = () => {
     if (!selectedFile) return '';
     const data = new FormData();
     data.append('file', selectedFile);
-    const res = await fetch('http://localhost:8080/api/upload/profile-image/freelancer', {
+    const res = await fetch('http://192.168.1.4:8080/api/upload/profile-image/freelancer', {
       method: 'POST',
       body: data,
     });
@@ -110,7 +122,7 @@ const FreelancerSignupPage = () => {
 
   const sendOtp = async (mobile: string) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/sms/send-otp?mobile=${mobile}`, {
+      const res = await fetch(`http://192.168.1.4:8080/api/sms/send-otp?mobile=${mobile}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile }),
@@ -130,7 +142,7 @@ const FreelancerSignupPage = () => {
 
   const verifyOtp = async () => {
     try {
-      const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
+      const res = await fetch('http://192.168.1.4:8080/api/sms/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile: formData.mobile, otp }),
@@ -177,7 +189,7 @@ const FreelancerSignupPage = () => {
         services: formData.serviceCategoryIds.map((id) => parseInt(id)), // Send IDs as integers
       };
 
-      const res = await fetch('http://localhost:8080/api/auth/signup/freelancer', {
+      const res = await fetch('http://192.168.1.4:8080/api/auth/signup/freelancer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -233,7 +245,15 @@ const FreelancerSignupPage = () => {
                 </div>
                 <input type="text" name="fullName" placeholder="Full Name" value={formData.fullName} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" required />
                 <input type="tel" name="mobile" placeholder="Mobile Number" value={formData.mobile} onChange={handleChange} className="w-full px-4 py-3 bg-gray-100 rounded text-black" required />
-                {mobileStatus && <p className={`text-sm mt-1 ${mobileStatus.includes('used') ? 'text-red-500' : 'text-green-600'}`}>{mobileStatus}</p>}
+                {mobileStatus && (
+                  <p className={`text-sm mt-1 ${mobileStatus.includes('used') || mobileStatus.includes('Error')
+                      ? 'text-red-500'
+                      : 'text-green-600'
+                    }`}>
+                    {mobileStatus}
+                  </p>
+                )}
+
 
                 {!otpSent && !otpVerified && mobileStatus === 'Mobile number is available.' && (
                   <button
@@ -290,23 +310,23 @@ const FreelancerSignupPage = () => {
               <div className="space-y-6">
                 <label className='font-medium'>Select your service category (you may choose more than one):<br /> <span className='text-gray-600 font-light'>Press 'ctrl' + click on the options to select multiple.</span></label>
                 <select
-  multiple
-  name="serviceCategoryIds"
-  value={formData.serviceCategoryIds}
-  onChange={(e) => setFormData({ ...formData, serviceCategoryIds: Array.from(e.target.selectedOptions).map((o) => o.value) })}
-  className="w-full px-3 py-2 bg-gray-100 rounded text-black mt-2"
->
-  <option value="1">Electrician</option>
-  <option value="2">Plumber</option>
-  <option value="3">Carpenter</option>
-  <option value="4">TV Technician</option>
-  <option value="5">Computer Technician</option>
-  <option value="6">Mobile Technician</option>
-  <option value="7">Painter</option>
-  <option value="8">Sweeper</option>
-  <option value="9">Cook</option>
-  <option value="10">Mechanic</option>
-</select>
+                  multiple
+                  name="serviceCategoryIds"
+                  value={formData.serviceCategoryIds}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      serviceCategoryIds: Array.from(e.target.selectedOptions).map((o) => o.value),
+                    })
+                  }
+                  className="w-full px-3 py-2 bg-gray-100 rounded text-black mt-2"
+                >
+                  {serviceCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.category_title}
+                    </option>
+                  ))}
+                </select>
 
                 <label className='font-medium '>Experience (in years)</label>
                 <input type="number" name="experience" placeholder="Experience (years)" value={formData.experience} onChange={handleChange} className="w-full px-3 py-2 bg-gray-100 rounded text-black" />
@@ -326,7 +346,7 @@ const FreelancerSignupPage = () => {
             )}
 
 
-<div className="mt-6 flex justify-between">
+            <div className="mt-6 flex justify-between">
               {step > 1 && <button type="button" onClick={handleBack} className="px-4 py-2 bg-gray-500 text-white rounded">Back</button>}
               {step < steps.length && <button type="button" onClick={handleNext} className="px-4 py-2 bg-[#ff9900] text-white rounded">Next</button>}
               {step === steps.length && <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded" disabled={isLoading}>{isLoading ? 'Submitting...' : 'Submit'}</button>}

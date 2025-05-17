@@ -41,6 +41,7 @@ export default function CustomerRegistration() {
   };
 
   useEffect(() => {
+  const timer = setTimeout(() => {
     const checkMobile = async () => {
       const mobile = formData.mobile.trim();
       if (mobile.length === 10) {
@@ -48,9 +49,9 @@ export default function CustomerRegistration() {
         try {
           const res = await fetch(`http://localhost:8080/api/auth/check-mobile/customer?mobile=${mobile}`);
           const data = await res.json();
-          setMobileUnique(!data.exists); // true if mobile is unique
+          setMobileUnique(!data.exists);
         } catch (err) {
-          console.error('Error checking mobile uniqueness:', err);
+          console.error('Error checking mobile:', err);
           setMobileUnique(false);
         } finally {
           setCheckingMobile(false);
@@ -59,7 +60,11 @@ export default function CustomerRegistration() {
     };
 
     checkMobile();
-  }, [formData.mobile]);
+  }, 500); // debounce delay
+
+  return () => clearTimeout(timer);
+}, [formData.mobile]);
+
 
   const handleSendOtp = async () => {
     try {
@@ -128,12 +133,13 @@ export default function CustomerRegistration() {
     }
 
     try {
+      console.log(formData);
       const response = await fetch("http://localhost:8080/api/auth/signup/customer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
+      console.log(response);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Signup failed!");
@@ -206,6 +212,13 @@ export default function CustomerRegistration() {
                         </button>
                       </>
                     )}
+
+                    {otpSent && !otpVerified && (
+  <button onClick={handleSendOtp} className="mt-1 text-sm text-blue-600 underline">
+    Resend OTP
+  </button>
+)}
+
 
                     <div>
                       <label htmlFor="state" className="block text-sm font-medium mb-1">State</label>

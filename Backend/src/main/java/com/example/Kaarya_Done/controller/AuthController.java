@@ -37,6 +37,7 @@ public class AuthController {
 
     @PostMapping("/signup/customer")
     public ResponseEntity<?> signup(@Valid @RequestBody SignupDtoCustomer signupDtoCustomer) {
+        System.out.println(signupDtoCustomer);
         Customer customer = customerService.createCustomer(signupDtoCustomer);
         return ResponseEntity.ok(Map.of(
                 "id", customer.getId(),
@@ -119,7 +120,8 @@ public class AuthController {
                 "freelancerId", freelancer.getId(),
                 "name", freelancer.getFullName(),
                 "mobile", freelancer.getMobile(),
-                "role", role
+                "role", role,
+                "profileImage",freelancer.getProfileImageUrl()
         ));
     }
 }

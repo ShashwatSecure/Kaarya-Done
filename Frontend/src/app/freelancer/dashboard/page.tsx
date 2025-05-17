@@ -26,6 +26,32 @@ interface FreelancerData {
   completedJobs: number;
 }
 
+export interface JobRequestDto {
+  id: number;
+  title: string;
+  description: string;
+  serviceId: number;
+  serviceName: string;
+  customerId: number;
+  customerName: string;
+  customerPhone: string;
+  location: {
+    addressLine: string;
+    city: string;
+    state: string;
+    pincode: string;
+    locality: string;
+    latitude: number;
+    longitude: number;
+  };
+  urgencyLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'IMMEDIATE';
+  mediaUrls: string[]; // URLs of uploaded images or videos
+  preferredDate: string; // ISO string format e.g., "2025-05-17T14:30:00Z"
+  status: 'OPEN' | 'BID_PLACED' | 'FREELANCER_BOOKED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
+}
+
 interface StatCardProps {
   title: string;
   value: string;
@@ -86,15 +112,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ freelancer, activeTab, 
         <span className="text-black">Fix</span>
         <span className="bg-[#ff9900] text-black px-1 rounded">ify</span>
       </a>
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="md:hidden p-2 rounded-full hover:bg-gray-100"
-          aria-label="Close sidebar"
-        >
-          <FaChevronLeft size={20} />
-        </button>
-      )}
+      
     </div>
 
     <div className="p-4">
@@ -102,7 +120,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ freelancer, activeTab, 
         <img
           src={freelancer?.profileImage || '/default-avatar.webp'}
           alt="Profile"
-          className="w-10 h-10 rounded-full mr-3 object-cover"
+          className="w-10 h-8 rounded-full mr-3 object-cover"
         />
         <div>
           <p className="font-medium">{freelancer?.name || 'Loading...'}</p>
@@ -166,6 +184,7 @@ const FreelancerDashboard: React.FC = () => {
   const [freelancer, setFreelancer] = useState<FreelancerData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<JobRequestDto[]>([]);
 
   const fetchFreelancerData = useCallback(async () => {
     const token = localStorage.getItem('authToken');
@@ -199,6 +218,46 @@ const FreelancerDashboard: React.FC = () => {
   useEffect(() => {
     fetchFreelancerData();
   }, [fetchFreelancerData]);
+
+  
+  const fetchJobs = useCallback(async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      router.push('/login/freelancer');
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:8080/api/freelancer/jobs', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Server error response:", text);
+        setJobs([]);
+        return;
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setJobs(data);
+      } else {
+        console.error("Expected array, received:", data);
+        setJobs([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch jobs:", err);
+      setJobs([]);
+    }
+  }, [router]);
+
+  // Fetch jobs when new_jobs tab is active
+  useEffect(() => {
+    if (activeTab === 'new_jobs') {
+      fetchJobs();
+    }
+  }, [activeTab, fetchJobs]);
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen(prev => !prev);
@@ -235,14 +294,15 @@ const FreelancerDashboard: React.FC = () => {
 
       {/* Sidebar toggle button for mobile */}
       <button
-        aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
-        onClick={toggleSidebar}
-        className={`fixed z-40 top-1/2 transform -translate-y-1/2 md:hidden p-2 bg-white rounded-full shadow-lg text-gray-700 transition-all duration-300 ${
-          isSidebarOpen ? 'left-64 ml-2' : 'left-2'
-        }`}
-      >
-        {isSidebarOpen ? <FaChevronLeft size={20} /> : <FaChevronRight size={20} />}
-      </button>
+  aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
+  onClick={toggleSidebar}
+  className={`fixed z-60 top-1/2 transform -translate-y-1/2 md:hidden p-2 bg-white rounded-full shadow-lg text-gray-700 transition-all duration-300 ${
+    isSidebarOpen ? 'left-64 ml-2' : 'left-2'
+  }`}
+>
+  {isSidebarOpen ? <FaChevronLeft size={20} /> : <FaChevronRight size={20} />}
+</button> 
+
 
       <div className="flex min-h-screen bg-gray-100 text-gray-800">
         {/* Sidebar (Desktop) */}
@@ -255,25 +315,28 @@ const FreelancerDashboard: React.FC = () => {
         </aside>
 
         {/* Mobile Sidebar with Overlay */}
-        {isSidebarOpen && (
-          <>
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300"
-              onClick={toggleSidebar}
-            />
-            <aside
-              className="fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 md:hidden transform transition-transform duration-300 ease-in-out"
-              style={{ transform: isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)' }}
-            >
-              <SidebarContent
-                freelancer={freelancer}
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                onClose={toggleSidebar}
-              />
-            </aside>
-          </>
-        )}
+<>
+  {/* Overlay */}
+  <div 
+    className={`fixed inset-0 bg-black/30 z-40 md:hidden transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+    onClick={toggleSidebar}
+  />
+
+  {/* Sidebar */}
+  <aside
+    className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-100 md:hidden transform transition-transform duration-300 ease-in-out ${
+      isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+    }`}
+  >
+    <SidebarContent
+      freelancer={freelancer}
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      onClose={toggleSidebar}
+    />
+  </aside>
+</>
+
 
         {/* Main Content */}
         <main className={`flex-1 p-6 transition-all duration-300 ${isSidebarOpen ? 'ml-0' : 'md:ml-64'}`}>

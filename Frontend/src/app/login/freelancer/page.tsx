@@ -43,7 +43,7 @@ const FreelancerLoginForm: React.FC = () => {
       if (formData.mobile.length === 10) {
         setCheckingMobile(true);
         try {
-          const res = await fetch(`http://localhost:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
+          const res = await fetch(`http://192.168.1.4:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
           if (!res.ok) throw new Error(`Status ${res.status}`);
           const data = await res.json();
           setMobileExists(data.exists);
@@ -75,7 +75,7 @@ const FreelancerLoginForm: React.FC = () => {
 
   const handleSendOtp = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/sms/send-otp?mobile=${formData.mobile}`, {
+      const res = await fetch(`http://192.168.1.4:8080/api/sms/send-otp?mobile=${formData.mobile}`, {
         method: 'POST',
       });
       const data = await res.json();
@@ -98,7 +98,7 @@ const FreelancerLoginForm: React.FC = () => {
 
   const handleVerifyOtp = useCallback(async () => {
     try {
-      const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
+      const res = await fetch('http://192.168.1.4:8080/api/sms/verify-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ const FreelancerLoginForm: React.FC = () => {
         setStatusMessage('OTP verified! Logging in...');
         setError('');
         
-        const tokenResponse = await fetch('http://localhost:8080/api/auth/login/freelancer', {
+        const tokenResponse = await fetch('http://192.168.1.4:8080/api/auth/login/freelancer', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
