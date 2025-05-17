@@ -195,7 +195,7 @@ const FreelancerDashboard: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const res = await fetch('http://localhost:8080/api/freelancer/profile', {
+      const res = await fetch('http://192.168.1.4:8080/api/freelancer/profile', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -228,7 +228,7 @@ const FreelancerDashboard: React.FC = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:8080/api/freelancer/jobs', {
+      const res = await fetch('http://192.168.1.4:8080/api/freelancer/jobs', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
