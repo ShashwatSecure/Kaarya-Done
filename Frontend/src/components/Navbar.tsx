@@ -3,44 +3,39 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
-import { usePathname } from 'next/navigation'; // <-- Import usePathname
+import { usePathname } from 'next/navigation';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
 
 export default function Navbar() {
-  const pathname = usePathname(); // get current pathname client-side
+  const pathname = usePathname();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [customerProfile, setCustomerProfile] = useState<{ name: string; photoUrl: string } | null>(null);
-  const [freelancerProfile, setFreelancerProfile] = useState<{ name: string; photoUrl: string } | null>(null);
   const [isFreelancerAuthenticated, setIsFreelancerAuthenticated] = useState(false);
+  const [customerProfile, setCustomerProfile] = useState<{ id: string; name: string; profileImageUrl: string } | null>(null);
+  const [freelancerProfile, setFreelancerProfile] = useState<{ name: string; profileImageUrl: string } | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
 
   useEffect(() => {
-  const token = localStorage.getItem('authToken');
-  const freelancerToken = localStorage.getItem('freelancerToken');
+    const token = localStorage.getItem('authToken');
+    const freelancerToken = localStorage.getItem('freelancerToken');
 
-  if (token) {
-    fetchCustomerProfile(token)
-      .then(() => setIsAuthenticated(true))
-      .catch(() => {
-        localStorage.removeItem('authToken');
-      });
-  }
+    if (token) {
+      fetchCustomerProfile(token)
+        .then(() => setIsAuthenticated(true))
+        .catch(() => localStorage.removeItem('authToken'));
+    }
 
-  if (freelancerToken) {
-    fetchFreelancerProfile(freelancerToken)
-      .then(() => setIsFreelancerAuthenticated(true))
-      .catch(() => {
-        localStorage.removeItem('freelancerToken');
-      });
-  }
-}, []);
-
+    if (freelancerToken) {
+      fetchFreelancerProfile(freelancerToken)
+        .then(() => setIsFreelancerAuthenticated(true))
+        .catch(() => localStorage.removeItem('freelancerToken'));
+    }
+  }, []);
 
   const handleThrottle = async (fn: () => Promise<void>, retries = 3, delay = 1000) => {
     for (let i = 0; i < retries; i++) {
@@ -58,46 +53,33 @@ export default function Navbar() {
     }
   };
 
- const fetchCustomerProfile = async (token: string) => {
-  return handleThrottle(async () => {
-    const res = await fetch('http://localhost:8080/api/customer/profile', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const fetchCustomerProfile = async (token: string) => {
+    return handleThrottle(async () => {
+      const res = await fetch(`http://localhost:8080/api/customer/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch customer profile");
+      const data = await res.json();
+      setCustomerProfile({ id: data.id, name: data.name, profileImageUrl: data.profileImageUrl });
     });
+  };
 
-    if (!res.ok) throw new Error("Failed to fetch customer profile");
-
-    const data = await res.json();
-    setCustomerProfile({ name: data.name, photoUrl: data.photoUrl });
-  });
-};
-
-const fetchFreelancerProfile = async (token: string) => {
-  return handleThrottle(async () => {
-    const res = await fetch('http://localhost:8080/api/freelancer/profile', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  const fetchFreelancerProfile = async (token: string) => {
+    return handleThrottle(async () => {
+      const res = await fetch(`http://localhost:8080/api/freelancer/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch freelancer profile");
+      const data = await res.json();
+      setFreelancerProfile({ name: data.name, profileImageUrl: data.profileImageUrl });
     });
-
-    if (!res.ok) throw new Error("Failed to fetch freelancer profile");
-
-    const data = await res.json();
-    setFreelancerProfile({ name: data.name, photoUrl: data.photoUrl });
-  });
-};
-
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  };
 
   const handleLogout = async () => {
-    if (logoutLoading) return; // throttle logout
+    if (logoutLoading) return;
     setLogoutLoading(true);
     setDropdownOpen(false);
 
-    // simulate logout delay, e.g. server call or animation
     setTimeout(() => {
       localStorage.removeItem('authToken');
       localStorage.removeItem('freelancerToken');
@@ -126,16 +108,13 @@ const fetchFreelancerProfile = async (token: string) => {
     setIsModalOpen(false);
   };
 
-  // Use pathname from next/navigation directly, no need to check window
   const isActive = (href: string) => pathname === href;
 
-  // Link classes for nav options, active and hover styling
   const navLinkClass = (href: string) =>
     `px-3 py-2 rounded transition-colors duration-300
     ${isActive(href) ? 'text-orange-500' : 'text-gray-800'}
     hover:bg-orange-500 hover:text-white`;
 
-  // Dropdown button classes for logout and others
   const dropdownBtnClass = `block w-full text-left px-4 py-2 rounded transition-colors duration-300 text-red-600
     hover:bg-orange-500 hover:text-white`;
 
@@ -143,12 +122,10 @@ const fetchFreelancerProfile = async (token: string) => {
     <>
       <header className="bg-white py-4 px-6 border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold">
-              <span className="text-black">Fix</span>
-              <span className="bg-[#ff9900] text-black px-1 rounded">ify</span>
-            </Link>
-          </div>
+          <Link href="/" className="text-2xl font-bold">
+            <span className="text-black">Fix</span>
+            <span className="bg-[#ff9900] text-black px-1 rounded">ify</span>
+          </Link>
 
           <nav className="hidden lg:flex space-x-2">
             <Link href="/" className={navLinkClass('/')}>Home</Link>
@@ -161,7 +138,7 @@ const fetchFreelancerProfile = async (token: string) => {
           <div className="flex items-center space-x-4">
             {!isAuthenticated && !isFreelancerAuthenticated ? (
               <>
-                <button onClick={openModal} className="text-gray-800 hover:text-orange-500 transition-colors duration-300">
+                <button onClick={() => setIsModalOpen(true)} className="text-gray-800 hover:text-orange-500 transition-colors duration-300">
                   Login
                 </button>
                 <button
@@ -175,21 +152,24 @@ const fetchFreelancerProfile = async (token: string) => {
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex flex-col items-center hover:text-orange-500 focus:outline-none transition-colors duration-300"
-                  aria-haspopup="true"
-                  aria-expanded={dropdownOpen}
+                  className="flex flex-col items-center hover:text-orange-500 transition"
                 >
-                  {customerProfile?.photoUrl && (
-                    <img
-                      src={`http://localhost:8080${customerProfile.photoUrl}`}
-                      alt="Customer Profile"
-                      className="w-10 h-8 rounded-full object-cover mb-1"
-                    />
-                  )}
+                  <img
+                    src={`http://localhost:8080${customerProfile?.profileImageUrl}`}
+                    alt="Avatar"
+                    className="w-10 h-7 rounded-full object-cover mb-1"
+                  />
                   <span className="text-sm text-black font-medium">{customerProfile?.name}</span>
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 bg-white shadow-md border rounded-lg py-2 z-50 min-w-[120px]">
+                  <div className="absolute right-0 mt-2 bg-white border rounded-lg shadow-lg py-2 z-50 min-w-[140px]">
+                    <Link
+                      href={`/customer/${customerProfile?.id}/dashboard`}
+                      className="block px-4 py-2 hover:bg-orange-500 hover:text-white text-black"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      My Profile
+                    </Link>
                     <button
                       onClick={handleLogout}
                       disabled={logoutLoading}
@@ -204,21 +184,17 @@ const fetchFreelancerProfile = async (token: string) => {
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex flex-col items-center hover:text-orange-500 focus:outline-none transition-colors duration-300"
-                  aria-haspopup="true"
-                  aria-expanded={dropdownOpen}
+                  className="flex flex-col items-center hover:text-orange-500 transition"
                 >
-                  {freelancerProfile?.photoUrl && (
-                    <img
-                      src={`http://localhost:8080${freelancerProfile.photoUrl}`}
-                      alt="Freelancer Profile"
-                      className="w-10 h-8 rounded-full object-cover mb-1"
-                    />
-                  )}
+                  <img
+                    src={`http://localhost:8080${freelancerProfile?.profileImageUrl}`}
+                    alt="Freelancer Avatar"
+                    className="w-10 h-8 rounded-full object-cover mb-1"
+                  />
                   <span className="text-sm text-black font-medium">{freelancerProfile?.name}</span>
                 </button>
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 bg-white shadow-md border rounded-lg py-2 z-50 min-w-[120px]">
+                  <div className="absolute right-0 mt-2 bg-white border rounded-lg shadow-lg py-2 z-50 min-w-[140px]">
                     <button
                       onClick={handleLogout}
                       disabled={logoutLoading}
@@ -230,20 +206,19 @@ const fetchFreelancerProfile = async (token: string) => {
                 )}
               </div>
             )}
+
             <button
-              className="lg:hidden text-gray-800 hover:text-orange-500 transition-colors duration-300"
               onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Toggle navigation"
-              aria-expanded={menuOpen}
+              className="lg:hidden text-gray-800 hover:text-orange-500 transition-colors duration-300"
+              aria-label="Toggle menu"
             >
               {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {menuOpen && (
-          <nav className="lg:hidden bg-white border-t border-gray-200 py-4 space-y-2 shadow-lg fixed top-[64px] left-0 right-0 z-40">
+          <nav className="lg:hidden bg-white border-t border-gray-200 py-4 space-y-2 shadow-lg fixed top-[72px] left-0 right-0 z-40">
             {['/', '/services', '/freelancers', '/how-it-works', '/contactus'].map((href) => {
               const labelMap: Record<string, string> = {
                 '/': 'Home',
@@ -257,12 +232,9 @@ const fetchFreelancerProfile = async (token: string) => {
                   key={href}
                   href={href}
                   onClick={() => setMenuOpen(false)}
-                  className={`block px-6 py-3 rounded transition-colors duration-300 text-center font-semibold
-                    ${
-                      isActive(href)
-                        ? 'text-[#ff9900]'
-                        : 'text-gray-800 hover:bg-[#ff9900] hover:text-white'
-                    }`}
+                  className={`block px-6 py-3 text-center font-semibold rounded transition-colors duration-300 ${
+                    isActive(href) ? 'text-orange-500' : 'text-gray-800 hover:bg-orange-500 hover:text-white'
+                  }`}
                 >
                   {labelMap[href]}
                 </Link>
@@ -272,16 +244,8 @@ const fetchFreelancerProfile = async (token: string) => {
         )}
       </header>
 
-      {/* Modals */}
-      <LoginModal
-        isOpen={isModalOpen}
-        closeModal={closeModal}
-        onLoginSuccess={handleLoginSuccess}
-      />
-      <RegisterModal
-        isOpen={isRegisterModalOpen}
-        onClose={() => setIsRegisterModalOpen(false)}
-      />
+      <LoginModal isOpen={isModalOpen} closeModal={() => setIsModalOpen(false)} onLoginSuccess={handleLoginSuccess} />
+      <RegisterModal isOpen={isRegisterModalOpen} onClose={() => setIsRegisterModalOpen(false)} />
     </>
   );
 }

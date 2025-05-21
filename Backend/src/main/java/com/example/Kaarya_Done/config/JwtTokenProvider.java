@@ -1,9 +1,12 @@
 package com.example.Kaarya_Done.config;
 
+import com.example.Kaarya_Done.service.CustomerService;
+import com.example.Kaarya_Done.service.FreelancerService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +20,12 @@ import java.util.Map;
 public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
+
+    @Autowired
+    private CustomerService customerService;
+
+    @Autowired
+    private FreelancerService freelancerService;
 
     // Inject from application properties or environment variables
     @Value("${jwt.secret}")
@@ -35,14 +44,20 @@ public class JwtTokenProvider {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    // Generate JWT token
     public String generateToken(String mobile, String role) {
         Map<String, Object> claims = new HashMap<>();
+        System.out.println("role : "+role);
         claims.put("role", role);
-
+        claims.put("mobile", mobile);
+        System.out.println("mobile : "+mobile);// Optional, but helpful for frontend
+        String id = "";
+        if(role.equalsIgnoreCase("CUSTOMER"))
+            id = Long.toString(customerService.findByMobile(mobile).getId());
+        else if(role.equalsIgnoreCase("FREELANCER"))
+            id = Long.toString(freelancerService.findByMobile(mobile).getId());
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(mobile)
+                .setSubject(id) // ✅ ID as subject
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)

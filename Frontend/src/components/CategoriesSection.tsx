@@ -23,7 +23,7 @@ const CategorySection: FC = () => {
             </div>
             <h3 className="text-xl font-semibold mb-2 text-black">Electrician</h3>
             <p className="text-gray-600">Wiring, repairs, installations</p>
-          </div>
+          </div> 
 
           {/* Category Card 3 */}
           <div className="category-card bg-gray-100 rounded-lg p-6 text-center transition duration-300 cursor-pointer hover:shadow-lg">

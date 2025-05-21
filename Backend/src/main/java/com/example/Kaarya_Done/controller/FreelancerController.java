@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/freelancer")
+@CrossOrigin(origins = "http://localhost:3000")
 public class FreelancerController {
 
     @Autowired
@@ -30,17 +31,18 @@ public class FreelancerController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @GetMapping("/profile")
-    @PreAuthorize("hasRole('freelancer')")
+    @PreAuthorize("hasRole('FREELANCER')")
     public ResponseEntity<?> getFreelancerProfile(Authentication authentication) {
-        String mobile = authentication.getName();
-        Freelancer freelancer = freelancerService.findByMobile(mobile);
+        String id = authentication.getName();
+        Freelancer freelancer = freelancerService.findById(id);
 
         if (freelancer == null) {
             return ResponseEntity.status(404).body(Map.of("error", "freelancer not found"));
         }
 
-        System.out.println(freelancer.getProfileImageUrl());
+        System.out.println("Fetching profile Image : "+freelancer.getProfileImageUrl());
         return ResponseEntity.ok(Map.of(
+                "id", freelancer.getId(),
                 "name", freelancer.getFullName() != null ? freelancer.getFullName() : "",
                 "role", freelancer.getRole() != null ? freelancer.getRole() : "freelancer",
                 "earnings", freelancer.getEarnings() != null ? freelancer.getEarnings() : 0.0,

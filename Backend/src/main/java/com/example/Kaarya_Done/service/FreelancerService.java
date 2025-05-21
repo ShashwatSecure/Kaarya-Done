@@ -79,4 +79,8 @@ public class FreelancerService {
     public Freelancer findByMobile(String mobile) {
         return freelancerRepository.findByMobile(mobile).orElse(null);
     }
+
+    public Freelancer findById(String id) {
+        return freelancerRepository.findById(Long.parseLong(id)).orElse(null);
+    }
 }

@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginDtoFreelancer {
+    private String id;
     private String mobile;
     private String role;
 }

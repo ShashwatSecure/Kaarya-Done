@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginDtoCustomer {
+    private String id;
     private String mobile;
     private String role;
 }

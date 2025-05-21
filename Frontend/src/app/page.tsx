@@ -3,9 +3,9 @@ import Image from "next/image";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import Navbar from "@/components/Navbar";
 import CategorySection from "@/components/CategoriesSection";
-import FreelancerSection from "@/components/TopFreelancers";
+import FreelancerSection from "@/components/Homepage/TopFreelancers";
 import HowItWorksSection from "@/components/HowItWorksSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
+import TestimonialsSection from "@/components/Homepage/TestimonialsSection";
 import Footer from "@/components/Footer";
 import { useRouter } from 'next/navigation';
 

@@ -71,7 +71,7 @@ const CustomerLoginForm: React.FC = () => {
       setCheckingMobile(true);
       try {
         const res = await fetch(
-          `${BACKEND_URL}/api/auth/check-mobile/customer?mobile=${mobile}`,
+          `http://localhost:8080/api/auth/check-mobile/customer?mobile=${mobile}`,
           {
             method: 'GET',
             headers: {
@@ -160,7 +160,7 @@ const CustomerLoginForm: React.FC = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ mobile: formData.mobile, otp }),
+        body: JSON.stringify({ mobile: formData.mobile, otp,role:"CUSTOMER" }),
       });
       const data = await res.json();
       if (res.ok && data.success) {

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/customer")
@@ -33,17 +34,17 @@ public class CustomerController {
 
     @GetMapping("/profile")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<?> getCustomerProfile(Authentication authentication) {
-        String mobile = authentication.getName();
-        Customer customer = customerService.findByMobile(mobile);
-
-        if (customer == null) {
+    public ResponseEntity<?> getCustomerProfile( Authentication authentication) {
+        String id = authentication.getName();
+        Optional<Customer> customer = customerService.findById(id);
+        if (customer.isEmpty()) {
             return ResponseEntity.status(404).body(Map.of("error", "Customer not found"));
         }
 
         return ResponseEntity.ok(Map.of(
-                "name", customer.getFullName(),
-                "profileImageUrl", customer.getProfileImageUrl()
+                "id",customer.get().getId(),
+                "name", customer.get().getFullName(),
+                "profileImageUrl", customer.get().getProfileImageUrl()
         ));
 
     }

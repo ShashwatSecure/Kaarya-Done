@@ -64,7 +64,7 @@ const FreelancerSignupPage = () => {
   useEffect(() => {
     const checkMobileNumber = async () => {
       try {
-        const res = await fetch(`http://192.168.1.4:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
+        const res = await fetch(`http://localhost:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
         if (!res.ok) throw new Error('Request failed');
         const text = await res.text();
         if (!text) throw new Error('Empty response');
@@ -111,7 +111,7 @@ const FreelancerSignupPage = () => {
     if (!selectedFile) return '';
     const data = new FormData();
     data.append('file', selectedFile);
-    const res = await fetch('http://192.168.1.4:8080/api/upload/profile-image/freelancer', {
+    const res = await fetch('http://localhost:8080/api/upload/profile-image/freelancer', {
       method: 'POST',
       body: data,
     });
@@ -122,7 +122,7 @@ const FreelancerSignupPage = () => {
 
   const sendOtp = async (mobile: string) => {
     try {
-      const res = await fetch(`http://192.168.1.4:8080/api/sms/send-otp?mobile=${mobile}`, {
+      const res = await fetch(`http://localhost:8080/api/sms/send-otp?mobile=${mobile}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile }),
@@ -142,7 +142,7 @@ const FreelancerSignupPage = () => {
 
   const verifyOtp = async () => {
     try {
-      const res = await fetch('http://192.168.1.4:8080/api/sms/verify-otp', {
+      const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mobile: formData.mobile, otp }),
@@ -189,7 +189,7 @@ const FreelancerSignupPage = () => {
         services: formData.serviceCategoryIds.map((id) => parseInt(id)), // Send IDs as integers
       };
 
-      const res = await fetch('http://192.168.1.4:8080/api/auth/signup/freelancer', {
+      const res = await fetch('http://localhost:8080/api/auth/signup/freelancer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

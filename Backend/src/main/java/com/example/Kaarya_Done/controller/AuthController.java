@@ -66,7 +66,11 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid mobile number or customer not found."));
         }
 
-        String token = jwtTokenProvider.generateToken(mobile, role);
+        // 🔁 Use customer ID as JWT subject
+        String token = jwtTokenProvider.generateToken(
+                customer.getMobile(),
+                role
+        );
 
         return ResponseEntity.ok(Map.of(
                 "token", token,
@@ -112,8 +116,11 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid mobile number or freelancer not found."));
         }
 
-        String token = jwtTokenProvider.generateToken(mobile, role);
-        System.out.println(token+"\n"+freelancer.getId()+"\n"+freelancer.getMobile()+"\n"+role);
+        // 🔁 Update to pass freelancer ID
+        String token = jwtTokenProvider.generateToken(
+                freelancer.getMobile(),
+                role
+        );
 
         return ResponseEntity.ok(Map.of(
                 "token", token,
@@ -121,7 +128,8 @@ public class AuthController {
                 "name", freelancer.getFullName(),
                 "mobile", freelancer.getMobile(),
                 "role", role,
-                "profileImage",freelancer.getProfileImageUrl()
+                "profileImage", freelancer.getProfileImageUrl()
         ));
     }
+
 }

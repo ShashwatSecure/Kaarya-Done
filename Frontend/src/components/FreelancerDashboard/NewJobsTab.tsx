@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import BidModal from "./BidModal";
 import StartInspectionModal from "./StartInspectionModal";
+import { JobRequestDto } from "@/types/FreelancerDashboardTypes";
 
 type JobRequest = {
   id: number;
@@ -17,6 +18,7 @@ type JobRequest = {
 };
 
 interface NewJobsTabProps {
+  jobs: JobRequestDto[];
   onBidNow: () => void;
   onStartInspection: () => void;
 }

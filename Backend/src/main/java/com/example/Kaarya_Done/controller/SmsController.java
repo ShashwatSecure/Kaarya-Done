@@ -57,6 +57,7 @@ public class SmsController {
         String mobile = payload.get("mobile");
         String otpReceived = payload.get("otp");
         String role = payload.get("role");  // Expected roles: freelancer, customer, company
+        System.out.println("payload : "+payload);
         String formattedNumber = "+91" + mobile;
 
         OtpRecord otpRecord = otpStore.get(formattedNumber);
@@ -80,7 +81,7 @@ public class SmsController {
             otpStore.remove(formattedNumber);
 
             // ✅ Use JwtTokenProvider instead of JwtUtil
-            String token = jwtTokenProvider.generateToken(formattedNumber, role);
+            String token = jwtTokenProvider.generateToken(mobile, role);
 
             responseMap.put("success", true);
             responseMap.put("message", "OTP verified successfully");

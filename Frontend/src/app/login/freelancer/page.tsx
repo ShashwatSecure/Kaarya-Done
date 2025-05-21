@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const FreelancerLoginForm: React.FC = () => {
   const [formData, setFormData] = useState({ mobile: '' });
   const [otp, setOtp] = useState('');
@@ -39,26 +41,35 @@ const FreelancerLoginForm: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
     const checkMobile = async () => {
       if (formData.mobile.length === 10) {
         setCheckingMobile(true);
         try {
-          const res = await fetch(`http://192.168.1.4:8080/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`);
+          const res = await fetch(
+            `${API_BASE_URL}/api/auth/check-mobile/freelancer?mobile=${formData.mobile}`,
+            { signal: controller.signal }
+          );
           if (!res.ok) throw new Error(`Status ${res.status}`);
           const data = await res.json();
           setMobileExists(data.exists);
           if (!data.exists) setError('Mobile number not registered.');
-        } catch (err) {
-          console.error('Error checking mobile:', err);
-          setError('Something went wrong while checking the number.');
+        } catch (err: any) {
+          if (err.name !== 'AbortError') {
+            console.error('Error checking mobile:', err);
+            setError('Something went wrong while checking the number.');
+          }
         } finally {
           setCheckingMobile(false);
         }
       }
     };
-    
+
     const timer = setTimeout(checkMobile, 500);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [formData.mobile]);
 
   useEffect(() => {
@@ -75,7 +86,7 @@ const FreelancerLoginForm: React.FC = () => {
 
   const handleSendOtp = useCallback(async () => {
     try {
-      const res = await fetch(`http://192.168.1.4:8080/api/sms/send-otp?mobile=${formData.mobile}`, {
+      const res = await fetch(`${API_BASE_URL}/api/sms/send-otp?mobile=${formData.mobile}`, {
         method: 'POST',
       });
       const data = await res.json();
@@ -98,24 +109,21 @@ const FreelancerLoginForm: React.FC = () => {
 
   const handleVerifyOtp = useCallback(async () => {
     try {
-      const res = await fetch('http://192.168.1.4:8080/api/sms/verify-otp', {
+      const res = await fetch(`${API_BASE_URL}/api/sms/verify-otp`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ mobile: formData.mobile, otp }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile: formData.mobile, otp, role: 'FREELANCER' }),
       });
       const data = await res.json();
+
       if (data.success) {
         setOtpVerified(true);
         setStatusMessage('OTP verified! Logging in...');
         setError('');
-        
-        const tokenResponse = await fetch('http://192.168.1.4:8080/api/auth/login/freelancer', {
+
+        const tokenResponse = await fetch(`${API_BASE_URL}/api/auth/login/freelancer`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mobile: formData.mobile, role: 'freelancer' }),
         });
 
@@ -123,7 +131,7 @@ const FreelancerLoginForm: React.FC = () => {
         if (tokenData.token) {
           localStorage.setItem('authToken', tokenData.token);
           setStatusMessage('Successfully logged in as Freelancer.');
-          router.push("/freelancer/dashboard");
+          router.push(`/freelancer/${tokenData.freelancerId}/dashboard`);
         } else {
           setError(tokenData.message || 'Failed to log in.');
         }
@@ -138,11 +146,12 @@ const FreelancerLoginForm: React.FC = () => {
     }
   }, [formData.mobile, otp, router, clearMessages]);
 
-  const handleOtpKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleVerifyOtp();
-    }
-  }, [handleVerifyOtp]);
+  const handleOtpKeyPress = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') handleVerifyOtp();
+    },
+    [handleVerifyOtp]
+  );
 
   return (
     <>
@@ -220,7 +229,7 @@ const FreelancerLoginForm: React.FC = () => {
 
           <div className="border-t border-gray-200 pt-4 text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              Don’t have an account?{' '}
               <a href="/signup/freelancer" className="text-[#ff9900] hover:underline">Sign up</a>
             </p>
           </div>

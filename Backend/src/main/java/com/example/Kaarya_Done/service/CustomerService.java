@@ -57,4 +57,8 @@ public class CustomerService {
     public Customer findByMobile(String mobile) {
         return customerRepository.findByMobile(mobile).orElse(null);
     }
+
+    public Optional<Customer> findById(String id) {
+        return Optional.ofNullable(customerRepository.findById(Long.parseLong(id)).orElse(null));
+    }
 }
