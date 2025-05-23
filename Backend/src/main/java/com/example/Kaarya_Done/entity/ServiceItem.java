@@ -1,6 +1,7 @@
 package com.example.Kaarya_Done.entity;
 
 import com.example.Kaarya_Done.util.KeywordUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -29,6 +30,7 @@ public class ServiceItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnore
     private ServiceCategory category;
 
     @Column(name = "created_at", updatable = false)

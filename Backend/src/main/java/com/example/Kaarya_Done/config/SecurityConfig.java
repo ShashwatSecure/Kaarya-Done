@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
-                        .requestMatchers("/api/auth/**", "/api/sms/**", "/api/upload/**","/images/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/sms/**", "/api/upload/**","/images/**","/api/services/**").permitAll()
 
                         // Admin-only endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

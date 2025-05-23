@@ -47,9 +47,6 @@ public class JobRequest {
     @Column(name = "locality", nullable = false)
     private String locality;
 
-    @Column(name = "is_urgent", nullable = false)
-    private boolean isUrgent;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private JobStatus status;

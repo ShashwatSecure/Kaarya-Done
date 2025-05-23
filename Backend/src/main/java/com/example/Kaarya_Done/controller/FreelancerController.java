@@ -68,24 +68,29 @@ public class FreelancerController {
             System.out.println("Jobs Received : " + jobs.size());
 
             // Convert entities to DTOs
-            List<JobRequestDto> jobDtos = jobs.stream().map(job -> JobRequestDto.builder()
-                    .id(job.getId())
-                    .city(job.getCity())
-                    .state(job.getState())
-                    .pincode(job.getPincode())
-                    .locality(job.getLocality())
-                    .title(job.getTitle())
-                    .description(job.getDescription())
-                    .isUrgent(job.isUrgent())
-                    .mediaUrls(job.getMediaUrls())
-                    .status(job.getStatus().name())
-                    .createdAt(job.getCreatedAt())
-                    .updatedAt(job.getUpdatedAt())
-                    .serviceItemName(job.getServiceItem() != null ? job.getServiceItem().getTitle() : null)
-                    .customerName(job.getCustomer() != null ? job.getCustomer().getFullName() : null)
-                    .profileImage(job.getCustomer() != null ? job.getCustomer().getProfileImageUrl() : null) // ✅ NEW LINE
-                    .build()
-            ).toList();
+            List<JobRequestDto> jobDtos = jobs.stream().map(job -> {
+                // Convert mediaUrls from comma-separated String to List<String>
+                List<String> mediaUrlsList = null;
+                if (job.getMediaUrls() != null && !job.getMediaUrls().isEmpty()) {
+                    mediaUrlsList = List.of(job.getMediaUrls().split(","));
+                }
+
+                return JobRequestDto.builder()
+                        .id(job.getId())
+                        .customerId(job.getCustomer() != null ? job.getCustomer().getId() : null)
+                        .serviceItemId(job.getServiceItem() != null ? job.getServiceItem().getId() : null)
+                        .city(job.getCity())
+                        .state(job.getState())
+                        .pincode(job.getPincode())
+                        .locality(job.getLocality())
+                        .title(job.getTitle())
+                        .description(job.getDescription())
+                        .mediaUrls(mediaUrlsList)
+                        .status(job.getStatus().name())
+                        .createdAt(job.getCreatedAt())
+                        .updatedAt(job.getUpdatedAt())
+                        .build();
+            }).toList();
 
             return ResponseEntity.ok(jobDtos);
         } catch (Exception e) {
@@ -94,7 +99,7 @@ public class FreelancerController {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to fetch jobs.");
-
         }
     }
+
 }
