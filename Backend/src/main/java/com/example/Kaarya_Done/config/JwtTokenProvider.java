@@ -49,7 +49,7 @@ public class JwtTokenProvider {
         System.out.println("role : "+role);
         claims.put("role", role);
         claims.put("mobile", mobile);
-        System.out.println("mobile : "+mobile);// Optional, but helpful for frontend
+        System.out.println("mobile : "+mobile);
         String id = "";
         if(role.equalsIgnoreCase("CUSTOMER"))
             id = Long.toString(customerService.findByMobile(mobile).getId());

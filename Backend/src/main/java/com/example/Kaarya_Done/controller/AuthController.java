@@ -66,7 +66,7 @@ public class AuthController {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid mobile number or customer not found."));
         }
 
-        // 🔁 Use customer ID as JWT subject
+        // 🔁 Using customer ID as JWT subject
         String token = jwtTokenProvider.generateToken(
                 customer.getMobile(),
                 role

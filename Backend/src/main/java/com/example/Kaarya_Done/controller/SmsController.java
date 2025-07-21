@@ -52,11 +52,49 @@ public class SmsController {
         return ResponseEntity.ok(responseMap);
     }
 
+    @PostMapping("/verify-signup-otp")
+    public ResponseEntity<Map<String, Object>> verifySignupOtp(@RequestBody Map<String, String> payload) {
+        String mobile = payload.get("mobile");
+        String otpReceived = payload.get("otp");
+        String role = payload.get("role");  // Expected roles: freelancer, customer
+        System.out.println("payload : "+payload);
+        String formattedNumber = "+91" + mobile;
+
+        OtpRecord otpRecord = otpStore.get(formattedNumber);
+        Map<String, Object> responseMap = new HashMap<>();
+
+        if (otpRecord == null) {
+            responseMap.put("success", false);
+            responseMap.put("message", "OTP not found for this mobile number");
+            return new ResponseEntity<>(responseMap, HttpStatus.NOT_FOUND);
+        }
+
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - otpRecord.timestamp > TimeUnit.MINUTES.toMillis(5)) {
+            otpStore.remove(formattedNumber);
+            responseMap.put("success", false);
+            responseMap.put("message", "OTP expired");
+            return new ResponseEntity<>(responseMap, HttpStatus.GONE);
+        }
+
+        if (otpRecord.otp.equals(otpReceived)) {
+            otpStore.remove(formattedNumber);
+
+            responseMap.put("success", true);
+            responseMap.put("message", "OTP verified successfully");
+            return new ResponseEntity<>(responseMap, HttpStatus.OK);
+        } else {
+            responseMap.put("success", false);
+            responseMap.put("message", "Invalid OTP");
+            return new ResponseEntity<>(responseMap, HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
+
     @PostMapping("/verify-otp")
     public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody Map<String, String> payload) {
         String mobile = payload.get("mobile");
         String otpReceived = payload.get("otp");
-        String role = payload.get("role");  // Expected roles: freelancer, customer, company
+        String role = payload.get("role");  // Expected roles: freelancer, customer
         System.out.println("payload : "+payload);
         String formattedNumber = "+91" + mobile;
 

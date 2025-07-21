@@ -11,4 +11,5 @@ public class ServiceItemDto {
     private String title;
     private String description;
     private Long categoryId;
+    private String icon;
 }

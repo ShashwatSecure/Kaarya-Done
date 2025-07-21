@@ -28,6 +28,7 @@ public class ServiceController {
                 .id(item.getId())
                 .title(item.getTitle())
                 .description(item.getDescription())
+                .icon(item.getIcon())
                 .categoryId(item.getCategory().getId())
                 .build()
         ).toList();

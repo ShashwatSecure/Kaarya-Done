@@ -33,6 +33,9 @@ public class ServiceItem {
     @JsonIgnore
     private ServiceCategory category;
 
+    @Column(name="icon")
+    private String icon;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

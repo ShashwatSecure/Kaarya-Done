@@ -28,7 +28,6 @@ export default function CustomerRegistration() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Reset mobile uniqueness and OTP state if mobile changes
     if (name === "mobile") {
       setOtpSent(false);
       setOtpVerified(false);
@@ -86,10 +85,10 @@ export default function CustomerRegistration() {
 
   const handleVerifyOtp = async () => {
     try {
-      const res = await fetch('http://localhost:8080/api/sms/verify-otp', {
+      const res = await fetch('http://localhost:8080/api/sms/verify-signup-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mobile: formData.mobile, otp }),
+        body: JSON.stringify({ mobile: formData.mobile, otp,role: "CUSTOMER" }),
       });
       const data = await res.json();
       if (data.success) {

@@ -8,6 +8,7 @@ import * as icons from '@fortawesome/free-solid-svg-icons';
 import Fuse from 'fuse.js';
 import JobRequestModal from '@/components/JobRequestModal';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { jwtDecode } from 'jwt-decode';
 
 export type Service = {
   id: number;
@@ -20,6 +21,18 @@ export type Service = {
 type Category = {
   id: number;
   title: string;
+};
+
+const getCustomerIdFromToken = (): number | null => {
+  const token = localStorage.getItem('authToken');
+  if (!token) return null;
+  try {
+    const payload = jwtDecode<any>(token);
+    return payload?.customerId || null;
+  } catch (error) {
+    console.error('Invalid token:', error);
+    return null;
+  }
 };
 
 const FilterButton = ({
@@ -61,7 +74,9 @@ const ServiceCard = ({
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
       <p className="text-gray-700 mb-4">{description}</p>
       <button
-        onClick={() => onDescribeClick({ id, title, description, icon, categoryId })}
+        onClick={() =>
+          onDescribeClick({ id, title, description, icon, categoryId })
+        }
         className="text-[#ff9900] font-medium hover:underline hover:text-orange-500 mt-2"
       >
         Describe your issue →
@@ -79,8 +94,13 @@ const Services = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number>(-1);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [customerId, setCustomerId] = useState<number | null>(null);
 
-  // Restore state from URL on mount
+  useEffect(() => {
+    const id = getCustomerIdFromToken();
+    setCustomerId(id);
+  }, []);
+
   useEffect(() => {
     const query = searchParams.get('search') || '';
     const categoryIdStr = searchParams.get('categoryId');
@@ -92,14 +112,17 @@ const Services = () => {
       setSelectedCategoryId(Number(categoryIdStr));
     }
 
-    // We'll restore selectedService after services are fetched
     if (serviceIdStr) {
-      // temporarily store for later restore
-      setSelectedService({ id: Number(serviceIdStr), title: '', description: '', icon: '', categoryId: -1 });
+      setSelectedService({
+        id: Number(serviceIdStr),
+        title: '',
+        description: '',
+        icon: '',
+        categoryId: -1,
+      });
     }
   }, [searchParams]);
 
-  // Fetch services and categories
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -116,7 +139,6 @@ const Services = () => {
     fetchData();
   }, []);
 
-  // Once services are loaded, restore full selectedService if needed
   useEffect(() => {
     if (
       selectedService &&
@@ -128,7 +150,6 @@ const Services = () => {
       if (fullService) {
         setSelectedService(fullService);
       } else {
-        // service id from URL not found in loaded services
         setSelectedService(null);
       }
     }
@@ -149,36 +170,39 @@ const Services = () => {
     (service) => selectedCategoryId === -1 || service.categoryId === selectedCategoryId
   );
 
-  // Check login status
   const isCustomerLoggedIn = () => {
-    // Replace this with your real auth check
     return !!localStorage.getItem('authToken');
   };
 
-  // When user clicks Describe your issue
   const handleDescribeClick = (service: Service) => {
-  if (!isCustomerLoggedIn()) {
-    // Not logged in -> redirect to login with current state in URL
-    const params = new URLSearchParams();
-    if (searchQuery) params.set('search', searchQuery);
-    if (selectedCategoryId !== -1) params.set('categoryId', selectedCategoryId.toString());
-    params.set('serviceId', service.id.toString());
+    if (!isCustomerLoggedIn()) {
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('search', searchQuery);
+      if (selectedCategoryId !== -1)
+        params.set('categoryId', selectedCategoryId.toString());
+      params.set('serviceId', service.id.toString());
 
-    const redirectUrl = `/services?${params.toString()}`;
-    const encodedRedirect = encodeURIComponent(redirectUrl);
+      const redirectUrl = `/services?${params.toString()}`;
+      const encodedRedirect = encodeURIComponent(redirectUrl);
 
-    router.push(`/login/customer?redirect=${encodedRedirect}`);
-    return;
-  }
+      router.push(`/login/customer?redirect=${encodedRedirect}`);
+      return;
+    }
 
-  setSelectedService(service);
-};
+    setSelectedService(service);
+  };
 
   const handleJobRequestSubmit = (data: {
     jobTitle: string;
     description: string;
     mediaFiles: File[];
-    address: any;
+    address: {
+      state?: string;
+      city?: string;
+      pincode?: string;
+      locality?: string;
+      landmark?: string;
+    };
   }) => {
     console.log('Job Request Data:', {
       ...data,
@@ -235,18 +259,18 @@ const Services = () => {
       <Footer />
 
       <JobRequestModal
-  open={!!selectedService}
-  serviceId={selectedService?.id ?? null}
-  serviceTitle={selectedService?.title ?? ''}
-  category={
-    selectedService
-      ? categories.find(cat => cat.id === selectedService.categoryId)?.title ?? ''
-      : ''
-  }
-  onClose={() => setSelectedService(null)}
-  onSubmit={handleJobRequestSubmit}
-/>
-
+        open={!!selectedService}
+        serviceId={selectedService?.id ?? null}
+        serviceTitle={selectedService?.title ?? ''}
+        category={
+          selectedService
+            ? categories.find(cat => cat.id === selectedService.categoryId)?.title ?? ''
+            : ''
+        }
+        customerId={customerId}
+        onClose={() => setSelectedService(null)}
+        onSubmit={handleJobRequestSubmit}
+      />
     </div>
   );
 };
